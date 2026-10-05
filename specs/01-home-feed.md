@@ -1,6 +1,6 @@
 # SPEC 01 — Home `/` con el diseño del Feed
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** ninguna (primera spec del proyecto)
 > **Date:** 2026-10-02
 > **Objective:** Implementar la pantalla Feed (`references/pantallas/feed.dc.html`) como página Home (`/`) con fidelidad visual total en desktop y menú hamburguesa responsive, sin autenticación ni base de datos.
@@ -136,18 +136,18 @@ Archivos de componentes en PascalCase. `app/page.tsx` se elimina (reemplazado po
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] `pnpm dev` + abrir `/` no loguea errores ni warnings en la terminal.
-- [ ] En desktop (≥768px): sidebar fijo de 248px + feed centrado (máx 760px) con la paleta de la referencia.
-- [ ] En angosto (<768px): el sidebar fijo desaparece y el botón hamburguesa queda fijo arriba-izquierda.
-- [ ] El drawer se abre con el mismo contenido del sidebar y cierra por overlay, botón X y tecla Esc.
-- [ ] No hay scroll horizontal en viewports desde 360px.
-- [ ] Los títulos usan Fredoka y el cuerpo Nunito; Geist quedó eliminado.
-- [ ] El feed muestra los 3 `FeedPost` del mock en orden: `achievement` (3 likes/1 comentario), `activity` (5/2, con placeholder de foto), `announcement` (8/0).
-- [ ] Ningún elemento navega: clic en "Nueva publicación", nav, "Editar", "cerrar sesión", placeholder de foto y comentarios no cambia la URL ni da 404.
-- [ ] En desktop, la página se ve idéntica a `references/pantallas/feed.dc.html` (comparación visual).
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] `pnpm dev` + abrir `/` no loguea errores ni warnings en la terminal.
+- [x] En desktop (≥768px): sidebar fijo de 248px + feed centrado (máx 760px) con la paleta de la referencia.
+- [x] En angosto (<768px): el sidebar fijo desaparece y el botón hamburguesa queda fijo arriba-izquierda.
+- [x] El drawer se abre con el mismo contenido del sidebar y cierra por overlay, botón X y tecla Esc.
+- [x] No hay scroll horizontal en viewports desde 360px.
+- [x] Los títulos usan Fredoka y el cuerpo Nunito; Geist quedó eliminado.
+- [x] El feed muestra los 3 `FeedPost` del mock en orden: `achievement` (3 likes/1 comentario), `activity` (5/2, con placeholder de foto), `announcement` (8/0).
+- [x] Ningún elemento navega: clic en "Nueva publicación", nav, "Editar", "cerrar sesión", placeholder de foto y comentarios no cambia la URL ni da 404.
+- [x] En desktop, la página se ve idéntica a `references/pantallas/feed.dc.html` (comparación visual).
 
 ## Decisions
 
