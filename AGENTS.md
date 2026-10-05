@@ -76,13 +76,4 @@ Skills del proyecto en `.agents/skills/` (instaladas desde `klerith/fernando-ski
 
 ## MCPs
 
-- **Playwright** — screenshots, console logs y snapshots van a `.playwright-mcp/` (ya está gitignored; los archivos sueltos en la raíz no).
-- **Context7** — para traer documentación actualizada del framework cuando necesites API que no recuerdes.
-
-## Idioma
-
-El usuario escribe en español y las convenciones del repo están en español. Responde en el idioma del prompt; las skills de spec exige explícitamente eso.
-
-## Reglas de código
-
-- Usar código limpio, nombres funciones, variables, etc en inglés.
+- Playwright screenshots, y cualquier cosa relacionada a Playwright tiene que estar en la carpeta .playwright-mcp.
