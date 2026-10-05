@@ -47,7 +47,7 @@ export default async function KidProfilePage({ params }: PageProps<"/kids/[id]">
         <div className="flex w-full flex-col gap-[14px] md:w-[300px] md:flex-none">
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-[9px] rounded-[14px] bg-ink py-[13px] text-[15px] font-extrabold text-white"
+            className="flex w-full items-center justify-center gap-[9px] rounded-[14px] bg-ink px-[13px] py-[13px] text-[15px] font-extrabold text-white"
           >
             <svg
               width="18"
