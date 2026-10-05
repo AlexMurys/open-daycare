@@ -62,18 +62,45 @@ Fix si quieres dejar `pnpm lint` usable: añadir `references/**` al array `globa
 `references/pantallas/*.dc.html` son **exports de Penpot** (root `<x-dc>`, `helmet data-dc-atomics`) con `support.js` vendor. Son la fuente de verdad del diseño, junto a `references/screenshots/*.png`.
 
 - Pantallas ya exportadas: `login`, `activar-cuenta`, `vincular-padre`, `index`, `feed`, `crear-publicacion`, `detalle-publicacion`, `ninos`, `perfil-nino`, `agregar-nino`, `foto`, `avisos`, `resumen-dia`, `mi-cuenta`, `familia-feed`, `familia-cuenta`.
-- Tipografía del diseño: **Nunito** para cuerpo, **Fredoka** para títulos. `app/layout.tsx` todavía carga Geist de `create-next-app` — hay que migrarlo a Nunito/Fredoka.
+- Tipografía del diseño: **Nunito** para cuerpo, **Fredoka** para títulos. Ya está migrado en `app/layout.tsx` vía `next/font/google` (sin Geist).
 - **No edites ni borres** los `.dc.html` ni `support.js` (vendor). Son solo referencia.
-- Estas referencias son de **Julio**, create-next-app es de **Octubre**: el repo es un andamiaje limpio esperando a que se implemente el diseño.
+- Estas referencias son de **Julio**, create-next-app es de **Octubre**. Solo `feed` está implementada (spec 01, route group `app/(daycare)/`); las otras 15 pantallas siguen pendientes, cada una con su propia spec.
 
 ## Flujo spec-driven
 
 Skills del proyecto en `.agents/skills/` (instaladas desde `klerith/fernando-skills`, fijadas en `skills-lock.json`). Tienen `disable-model-invocation: true`: **no se cargan solas**, el usuario las invoca explícitamente como `/spec` y `/spec-impl`.
 
-- `/spec` escribe `specs/NN-slug.md` con estado `Draft`. `specs/` todavía no existe.
-- `/spec-impl` exige estado **Approved**, crea la branch `spec-NN-slug` y va paso a pauso. `specs/.spec-config.yml` (con `AutoCreateBranch`) aún no existe.
+- `/spec` escribe `specs/NN-slug.md` con estado `Draft`.
+- `/spec-impl` exige estado **Approved**, crea la branch `spec-NN-slug` y va paso a pauso. `specs/.spec-config.yml` existe con `AutoCreateBranch: true`.
+- `/verify-spec` delega en el subagente `spec-verifier`: verifica los acceptance criteria con Playwright + Context7, corrige lo que falle y marca los checks. Si todo queda en verde, pasa el estado del spec a `Implemented`.
 - No escribas código sin spec cuando el usuario launch el flujo `/spec`.
 
 ## MCPs
 
 - Playwright screenshots, y cualquier cosa relacionada a Playwright tiene que estar en la carpeta .playwright-mcp.
+
+## Agents
+
+### spec-verifier
+
+Subagente (`mode: all`) que toma un spec de `specs/`, verifica **uno por uno** cada ítem de su sección de acceptance criteria, corrige lo que falle — tanto el código como el spec — y marca los checks con evidencia.
+
+Definición: `.opencode/agents/spec-verifier.md`
+
+- **Playwright + visión** para comparar las pantallas contra `references/pantallas/*.dc.html` y `references/screenshots/*.png`. No declara nada visual sin haber mirado la captura.
+- **Context7 + `node_modules/next/dist/docs/`** para validar la API de Next.js antes de corregir criterio que toque el framework.
+- Verifica por categorías: CLI/build (Bash), visual/interactivo (Playwright), Next.js/buenas prácticas (Context7).
+- Al final: pasa el spec a `Implemented` si todo quedó en verde, y devuelve tabla criterio → categoría → estado → evidencia.
+- **Nunca commitea, stasea ni hace push.** Deja el `git diff` y la decisión de commit es del usuario.
+
+## Commands
+
+### verify-spec
+
+```
+/verify-spec <NN-slug>
+```
+
+Verificación completa del spec: resuelve el archivo, clasifica sus acceptance criteria, levanta el dev server si hace falta, verifica uno por uno, corrige spec y código donde falle, marca los checks con `- [x]` y cierra con el reporte de evidencia. Delega en el agente `spec-verifier`.
+
+Definición: `.opencode/commands/verify-spec.md`
