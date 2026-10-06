@@ -76,7 +76,7 @@ export default function ActivateAccountPage() {
 
         <button
           type="button"
-          className="block w-full rounded-[15px] bg-linear-to-b from-accent-mid to-[#ee8164] py-[15px] text-center text-[16px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)]"
+          className="block w-full rounded-[15px] bg-[linear-gradient(180deg,#f4977e,#ee8164)] py-[15px] text-center text-[16px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)]"
         >
           Activar mi cuenta
         </button>
