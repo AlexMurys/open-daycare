@@ -7,12 +7,12 @@ import ParentsCard from "@/app/components/kids/ParentsCard";
 import ProfileHeader from "@/app/components/kids/ProfileHeader";
 
 export function generateStaticParams() {
-  return kids.map((kid) => ({ id: kid.id }));
+  return kids.map((kid) => ({ id: String(kid.id) }));
 }
 
 export default async function KidProfilePage({ params }: PageProps<"/kids/[id]">) {
   const { id } = await params;
-  const kid = kids.find((item) => item.id === id);
+  const kid = kids.find((item) => item.id === Number(id));
 
   if (!kid) notFound();
 

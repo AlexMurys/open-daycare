@@ -1,13 +1,13 @@
 # SPEC 02 — Niños `/kids` y perfil del niño `/kids/[id]`
 
-> **Status:** Implementado
+> **Status:** Approved
 > **Depends on:** SPEC 01 (`specs/01-home-feed.md`) — hereda tokens de `globals.css`, `Sidebar`/`MobileMenu`, layout `app/(daycare)/` y el patrón de mocks en `app/_data/`
 > **Date:** 2026-10-05
 > **Objective:** Implementar la pantalla Niños (`references/pantallas/ninos.dc.html`) en `/kids` y la de perfil de un niño (`references/pantallas/perfil-nino.dc.html`) en `/kids/[id]`, con mock completo de los 8 niños, buscador funcional, navegación real en el nav lateral y 404 estilado para ids inexistentes.
 
 ## Por qué existe esta spec
 
-SPEC 01 resolvió el Feed (`/`) y dejó la base —tokens de diseño, fuentes, layout con sidebar, componentes compartidos y mocks— de la que heredan todas las pantallas. Esta spec agrega las dos primeras pantallas de gestión de niños y es la primera que necesita **más de una ruta** y **datos propios de dominio**: introduce el slug `id` en la URL, el patrón de ruta dinámica, `notFound()`, `generateStaticParams` y un módulo de mock por dominio (`app/_data/kids.ts`).
+SPEC 01 resolvió el Feed (`/`) y dejó la base —tokens de diseño, fuentes, layout con sidebar, componentes compartidos y mocks— de la que heredan todas las pantallas. Esta spec agrega las dos primeras pantallas de gestión de niños y es la primera que necesita **más de una ruta** y **datos propios de dominio**: introduce el id numérico en la URL, el patrón de ruta dinámica, `notFound()`, `generateStaticParams` y un módulo de mock por dominio (`app/_data/kids.ts`).
 
 ## Scope
 
@@ -26,7 +26,7 @@ SPEC 01 resolvió el Feed (`/`) y dejó la base —tokens de diseño, fuentes, l
   - Card de datos con tres filas: **Fecha de nacimiento**, **Sala**, **Ingreso**.
   - Columna derecha: botón oscuro **Resumen del día** (inerte) y card **PADRES VINCULADOS** con los padres del mock, chip de estado (`ACTIVA` / `PENDIENTE`) y link **Vincular otro padre** (inerte).
   - `params` leído como Promise (API async de Next 16) con el tipo global `PageProps<"/kids/[id]">`.
-  - `generateStaticParams` con los 8 slugs.
+  - `generateStaticParams` con los 8 ids numéricos (1–8).
   - `notFound()` + `app/(daycare)/not-found.tsx` estilado en español para ids inexistentes.
 - Nav lateral del sidebar con navegación real:
   - **Feed** (`/`) y **Niños** (`/kids`) pasan a ser enlaces navegables; el ítem activo se deriva del `pathname` (`usePathname`), no del dato.
@@ -69,7 +69,7 @@ export interface ParentLink {
 }
 
 export interface Kid {
-  id: string; // slug de la URL: "mateo-fernandez"
+  id: number; // id numérico en la URL: 1 = Mateo … 8 = Olivia
   name: string; // "Mateo Fernández"
   initial: string; // "M"
   age: number; // 3
@@ -100,16 +100,16 @@ export const builtNavRoutes: readonly string[] = ["/", "/kids"];
 
 Convenciones: identificadores en inglés, strings visibles al usuario en español, fechas como strings literales sin parsing. Los datos de cada niño:
 
-| `id`              | Nombre          | Edad | Padres | Chip        | Avatar |
-| ----------------- | --------------- | ---- | ------ | ----------- | ------ |
-| `mateo-fernandez` | Mateo Fernández | 3    | 2      | MANÍ        | sky    |
-| `sofia-mendez`    | Sofía Méndez    | 2    | 1      | — (chevron) | rose   |
-| `benjamin-ruiz`   | Benjamín Ruiz   | 3    | 2      | — (chevron) | mint   |
-| `valentina-soto`  | Valentina Soto  | 2    | 0      | VINCULAR    | amber  |
-| `tomas-diaz`      | Tomás Díaz      | 3    | 1      | LACTOSA     | violet |
-| `emma-castro`     | Emma Castro     | 2    | 1      | — (chevron) | rose   |
-| `lucas-romero`    | Lucas Romero    | 3    | 1      | — (chevron) | sky    |
-| `olivia-vega`     | Olivia Vega     | 2    | 1      | — (chevron) | mint   |
+| `id` | Nombre          | Edad | Padres | Chip        | Avatar |
+| ---- | --------------- | ---- | ------ | ----------- | ------ |
+| `1`  | Mateo Fernández | 3    | 2      | MANÍ        | sky    |
+| `2`  | Sofía Méndez    | 2    | 1      | — (chevron) | rose   |
+| `3`  | Benjamín Ruiz   | 3    | 2      | — (chevron) | mint   |
+| `4`  | Valentina Soto  | 2    | 0      | VINCULAR    | amber  |
+| `5`  | Tomás Díaz      | 3    | 1      | LACTOSA     | violet |
+| `6`  | Emma Castro     | 2    | 1      | — (chevron) | rose   |
+| `7`  | Lucas Romero    | 3    | 1      | — (chevron) | sky    |
+| `8`  | Olivia Vega     | 2    | 1      | — (chevron) | mint   |
 
 Lo derivado (no vive en el dato):
 
@@ -171,38 +171,38 @@ Cada paso deja la app funcionando y verificable.
 3. **Nav real**: `Sidebar.tsx` pasa a `"use client"` con `usePathname`; cada ítem cuyo `href` está en `builtNavRoutes` se renderiza como `next/link` con el estado activo calculado (exacto para `/`, prefijo para `/kids/*`), los demás inertes como antes; el `onNavigate` del drawer se conserva en los enlaces nuevos. Manual: `/` sigue igual con Feed activo, `tsc` limpio, el drawer sigue abriendo y cerrando.
 4. **404**: `app/(daycare)/not-found.tsx` mínimo y en español con los tokens del proyecto (título Fredoka, mensaje, link a `/`). Manual: `/ruta-inexistente` muestra el 404 dentro del layout con sidebar.
 5. **Ruta `/kids`**: `app/(daycare)/kids/page.tsx` (kicker "GESTIÓN", `h1` "Niños", botón inerte "Agregar niño", divisor "SALA SOLES · 8 niños") + `components/kids/KidsList.tsx` (client: input con ícono de lupa, estado de búsqueda, filtra por nombre sin distinguir mayúsculas) + `components/kids/KidCard.tsx` (avatar, nombre, línea de padres, chip/chevron, hover) que enlaza a `/kids/[id]`. Manual: `/kids` muestra las 8 tarjetas en orden y el buscador filtra en vivo.
-6. **Ruta `/kids/[id]`**: `app/(daycare)/kids/[id]/page.tsx` con `PageProps<"/kids/[id]">`, `const { id } = await params`, búsqueda en `kids` por `id`, `notFound()` cuando no existe, `generateStaticParams` con los 8 slugs; más `ProfileHeader.tsx`, `AllergyBox.tsx` (solo si hay notas), `DetailsCard.tsx` y `ParentsCard.tsx`, con "Resumen del día", "Editar" y "Vincular otro padre" inertes y "Volver a Niños" como `Link` a `/kids`. Manual: `/kids/mateo-fernandez` replica la referencia y `/kids/no-existe` devuelve el 404 estilado.
+6. **Ruta `/kids/[id]`**: `app/(daycare)/kids/[id]/page.tsx` con `PageProps<"/kids/[id]">`, `const { id } = await params`, búsqueda en `kids` por `id` numérico (`Number(id)`; `NaN` no matchea → `notFound()`), `generateStaticParams` con los 8 ids; más `ProfileHeader.tsx`, `AllergyBox.tsx` (solo si hay notas), `DetailsCard.tsx` y `ParentsCard.tsx`, con "Resumen del día", "Editar" y "Vincular otro padre" inertes y "Volver a Niños" como `Link` a `/kids`. Manual: `/kids/1` replica la referencia y `/kids/no-existe` devuelve el 404 estilado.
 7. **Pulido responsive y fidelidad**: grilla de 1 columna por debajo de `md`, columnas del perfil apiladas en angosto, sin scroll horizontal desde 360px; comparación lado a lado contra `references/pantallas/ninos.dc.html` y `references/pantallas/perfil-nino.dc.html` en desktop, ajustando espaciados, radios, sombras y tipografía.
 8. **Verificación final con reinicio limpio del dev server** (en ese orden, sin saltos):
    1. `pnpm exec eslint app`, `pnpm exec tsc --noEmit` y `pnpm build` terminan sin errores.
    2. **Matar el proyecto corriendo antes de comprobar**: leer el PID y el puerto de `.next/dev/lock`; si el proceso sigue vivo, `kill <pid>` y confirmar que el puerto quedó libre; si no hay lock, revisar que ningún proceso ocupe el puerto (por ejemplo `lsof -ti :3000`) y matar solo los que pertenezcan a este proyecto.
    3. Re-levantar con `pnpm dev` sobre el puerto libre.
-   4. Comprobar en runtime, sin errores ni warnings en la terminal: `/` (con Feed activo), `/kids` (8 tarjetas, buscador filtrando, Niño activo), `/kids/mateo-fernandez` (perfil completo, Niño activo, "Volver a Niños" funciona), `/kids/<otro-slug>` y `/kids/no-existe` (404 estilado), el drawer móvil y la grilla en viewport angosto.
+   4. Comprobar en runtime, sin errores ni warnings en la terminal: `/` (con Feed activo), `/kids` (8 tarjetas, buscador filtrando, Niño activo), `/kids/1` (perfil completo, Niño activo, "Volver a Niños" funciona), `/kids/<otro-id>` y `/kids/no-existe` (404 estilado), el drawer móvil y la grilla en viewport angosto.
 
 ## Acceptance criteria
 
-- [x] `pnpm exec eslint app` termina sin errores.
-- [x] `pnpm exec tsc --noEmit` termina sin errores.
-- [x] `pnpm build` completa con éxito.
-- [x] Antes de la verificación en runtime, el dev server anterior fue matado (PID de `.next/dev/lock`, puerto 3000) y `pnpm dev` se volvió a levantar sobre el puerto libre.
-- [x] Con el dev server recién levantado, `/`, `/kids` y `/kids/[id]` no loguean errores ni warnings en la terminal.
-- [x] `/kids` muestra el kicker "GESTIÓN", el título "Niños" y el botón "Agregar niño" inerte (no navega ni cambia la URL).
-- [x] `/kids` muestra el divisor "SALA SOLES · 8 niños".
-- [x] `/kids` muestra las 8 tarjetas en el orden de la referencia: Mateo, Sofía, Benjamín, Valentina, Tomás, Emma, Lucas, Olivia.
-- [x] Cada tarjeta muestra avatar con inicial, nombre y la línea correcta de edad y padres vinculados ("2 padres", "1 padre", "sin padres").
-- [x] Los chips aparecen donde corresponde: MANÍ en Mateo, LACTOSA en Tomás, VINCULAR en Valentina, y chevron en las otras cinco.
-- [x] Al escribir en el buscador, la grilla se filtra por nombre en vivo; al borrar el texto, vuelven a aparecer las 8 tarjetas.
-- [x] La tarjeta tiene hover con borde más oscuro y elevación sutil, como en la referencia.
-- [x] Clic en una tarjeta navega a `/kids/<slug>` del niño correcto.
-- [x] `/kids/[id]` muestra "Volver a Niños" que lleva a `/kids`.
-- [x] `/kids/[id]` muestra avatar, nombre, "N años · Sala Soles", la caja de alergias cuando corresponde y las tres filas de datos (fecha de nacimiento, sala, ingreso).
-- [x] `/kids/[id]` muestra la card "PADRES VINCULADOS" con los padres del mock y sus chips de estado (`ACTIVA` / `PENDIENTE`).
-- [x] "Editar", "Resumen del día" y "Vincular otro padre" se renderizan pero no navegan.
-- [x] `/kids/no-existe` devuelve el 404 estilado en español dentro del layout con sidebar.
-- [x] En el sidebar, "Niños" es el ítem activo en `/kids` y en `/kids/[id]`, y "Feed" lo es en `/`; "Avisos" y "Mi cuenta" no navegan.
-- [x] Los enlaces "Feed" y "Niños" del sidebar navegan de verdad, y el drawer móvil sigue cerrando al navegar.
-- [x] Por debajo de `md` la grilla pasa a 1 columna y las columnas del perfil se apilan; no hay scroll horizontal desde 360px.
-- [x] En desktop, `/kids` y `/kids/[id]` se ven iguales a `references/pantallas/ninos.dc.html` y `references/pantallas/perfil-nino.dc.html` (comparación visual).
+- [ ] `pnpm exec eslint app` termina sin errores.
+- [ ] `pnpm exec tsc --noEmit` termina sin errores.
+- [ ] `pnpm build` completa con éxito.
+- [ ] Antes de la verificación en runtime, el dev server anterior fue matado (PID de `.next/dev/lock`, puerto 3000) y `pnpm dev` se volvió a levantar sobre el puerto libre.
+- [ ] Con el dev server recién levantado, `/`, `/kids` y `/kids/[id]` no loguean errores ni warnings en la terminal.
+- [ ] `/kids` muestra el kicker "GESTIÓN", el título "Niños" y el botón "Agregar niño" inerte (no navega ni cambia la URL).
+- [ ] `/kids` muestra el divisor "SALA SOLES · 8 niños".
+- [ ] `/kids` muestra las 8 tarjetas en el orden de la referencia: Mateo, Sofía, Benjamín, Valentina, Tomás, Emma, Lucas, Olivia.
+- [ ] Cada tarjeta muestra avatar con inicial, nombre y la línea correcta de edad y padres vinculados ("2 padres", "1 padre", "sin padres").
+- [ ] Los chips aparecen donde corresponde: MANÍ en Mateo, LACTOSA en Tomás, VINCULAR en Valentina, y chevron en las otras cinco.
+- [ ] Al escribir en el buscador, la grilla se filtra por nombre en vivo; al borrar el texto, vuelven a aparecer las 8 tarjetas.
+- [ ] La tarjeta tiene hover con borde más oscuro y elevación sutil, como en la referencia.
+- [ ] Clic en una tarjeta navega a `/kids/<id>` numérico del niño correcto.
+- [ ] `/kids/[id]` muestra "Volver a Niños" que lleva a `/kids`.
+- [ ] `/kids/[id]` muestra avatar, nombre, "N años · Sala Soles", la caja de alergias cuando corresponde y las tres filas de datos (fecha de nacimiento, sala, ingreso).
+- [ ] `/kids/[id]` muestra la card "PADRES VINCULADOS" con los padres del mock y sus chips de estado (`ACTIVA` / `PENDIENTE`).
+- [ ] "Editar", "Resumen del día" y "Vincular otro padre" se renderizan pero no navegan.
+- [ ] `/kids/no-existe` devuelve el 404 estilado en español dentro del layout con sidebar.
+- [ ] En el sidebar, "Niños" es el ítem activo en `/kids` y en `/kids/[id]`, y "Feed" lo es en `/`; "Avisos" y "Mi cuenta" no navegan.
+- [ ] Los enlaces "Feed" y "Niños" del sidebar navegan de verdad, y el drawer móvil sigue cerrando al navegar.
+- [ ] Por debajo de `md` la grilla pasa a 1 columna y las columnas del perfil se apilan; no hay scroll horizontal desde 360px.
+- [ ] En desktop, `/kids` y `/kids/[id]` se ven iguales a `references/pantallas/ninos.dc.html` y `references/pantallas/perfil-nino.dc.html` (comparación visual).
 
 ## Decisions
 
@@ -220,7 +220,8 @@ Cada paso deja la app funcionando y verificable.
 - **Sí:** `isActive` desaparece del dato y se calcula en el componente, para que `/kids/[id]` herede el activo sin props.
 - **Sí:** el chip VINCULAR y la línea de padres se derivan de `parents.length`; solo el texto del chip de alergia es dato.
 - **Sí:** claves de color de avatar semánticas (`sky`, `rose`, …) en el dato y paleta en el componente — cada niño tiene un color distinto, así que un mapa por tipo no alcanzaba.
-- **Sí:** `generateStaticParams` con los 8 slugs, para que los perfiles se prerendericen en build.
+- **Sí:** `generateStaticParams` con los 8 ids numéricos (1–8), para que los perfiles se prerendericen en build.
+- **Sí:** el id del niño es numérico (1–8), no un slug legible. _(decisión del usuario)_
 - **Sí:** el 404 vive en `app/(daycare)/not-found.tsx` (nivel del grupo) para que lo reutilicen las pantallas siguientes.
 - **Sí:** "8 niños" se muestra literal en `/kids` aunque el Feed diga "12 niños" — cada pantalla reproduce lo que dice su referencia.
 - **No:** backend, base de datos, autenticación ni mutaciones — los mocks siguen siendo constantes.

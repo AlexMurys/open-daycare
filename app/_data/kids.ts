@@ -19,7 +19,7 @@ export interface ParentLink {
 }
 
 export interface Kid {
-  id: string;
+  id: number;
   name: string;
   initial: string;
   age: number;
@@ -34,7 +34,7 @@ export interface Kid {
 
 export const kids: Kid[] = [
   {
-    id: "mateo-fernandez",
+    id: 1,
     name: "Mateo Fernández",
     initial: "M",
     age: 3,
@@ -63,7 +63,7 @@ export const kids: Kid[] = [
     enrolledSince: "feb 2025",
   },
   {
-    id: "sofia-mendez",
+    id: 2,
     name: "Sofía Méndez",
     initial: "S",
     age: 2,
@@ -82,7 +82,7 @@ export const kids: Kid[] = [
     enrolledSince: "ene 2026",
   },
   {
-    id: "benjamin-ruiz",
+    id: 3,
     name: "Benjamín Ruiz",
     initial: "B",
     age: 3,
@@ -108,7 +108,7 @@ export const kids: Kid[] = [
     enrolledSince: "mar 2025",
   },
   {
-    id: "valentina-soto",
+    id: 4,
     name: "Valentina Soto",
     initial: "V",
     age: 2,
@@ -119,7 +119,7 @@ export const kids: Kid[] = [
     enrolledSince: "abr 2026",
   },
   {
-    id: "tomas-diaz",
+    id: 5,
     name: "Tomás Díaz",
     initial: "T",
     age: 3,
@@ -140,7 +140,7 @@ export const kids: Kid[] = [
     enrolledSince: "sep 2025",
   },
   {
-    id: "emma-castro",
+    id: 6,
     name: "Emma Castro",
     initial: "E",
     age: 2,
@@ -159,7 +159,7 @@ export const kids: Kid[] = [
     enrolledSince: "ene 2026",
   },
   {
-    id: "lucas-romero",
+    id: 7,
     name: "Lucas Romero",
     initial: "L",
     age: 3,
@@ -178,7 +178,7 @@ export const kids: Kid[] = [
     enrolledSince: "mar 2025",
   },
   {
-    id: "olivia-vega",
+    id: 8,
     name: "Olivia Vega",
     initial: "O",
     age: 2,
