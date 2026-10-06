@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   POST_TYPE_LABEL,
   type FeedPost,
@@ -62,7 +63,10 @@ export default function PostCard({ post }: PostCardProps) {
       <p className="m-0 text-[15.5px] leading-[1.55] text-ink-body">{post.text}</p>
 
       {post.photo && (
-        <a className="mt-[14px] flex h-[200px] flex-col items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-dashed border-placeholder-line bg-placeholder-bg text-placeholder-ink">
+        <Link
+          href="#"
+          className="mt-[14px] flex h-[200px] flex-col items-center justify-center gap-2 rounded-[16px] border-[1.5px] border-dashed border-placeholder-line bg-placeholder-bg text-placeholder-ink"
+        >
           <svg
             width="30"
             height="30"
@@ -78,7 +82,7 @@ export default function PostCard({ post }: PostCardProps) {
             <path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L6 21" />
           </svg>
           <span className="text-[13.5px]">{post.photo}</span>
-        </a>
+        </Link>
       )}
 
       <div className="mt-4 flex items-center gap-[18px] border-t border-line-soft pt-[14px]">
@@ -97,7 +101,10 @@ export default function PostCard({ post }: PostCardProps) {
           </svg>
           {post.likes}
         </span>
-        <a className="flex items-center gap-[7px] text-[14px] font-bold text-ink-faint">
+        <Link
+          href="#"
+          className="flex items-center gap-[7px] text-[14px] font-bold text-ink-faint"
+        >
           <svg
             width="18"
             height="18"
@@ -111,9 +118,11 @@ export default function PostCard({ post }: PostCardProps) {
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z" />
           </svg>
           {post.comments}
-        </a>
+        </Link>
         <span className="flex-1" />
-        <a className="text-[14px] font-extrabold text-accent-strong">Editar</a>
+        <Link href="#" className="text-[14px] font-extrabold text-accent-strong">
+          Editar
+        </Link>
       </div>
     </article>
   );

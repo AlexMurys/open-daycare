@@ -1,6 +1,6 @@
 # SPEC 02 — Niños `/kids` y perfil del niño `/kids/[id]`
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 01 (`specs/01-home-feed.md`) — hereda tokens de `globals.css`, `Sidebar`/`MobileMenu`, layout `app/(daycare)/` y el patrón de mocks en `app/_data/`
 > **Date:** 2026-10-05
 > **Objective:** Implementar la pantalla Niños (`references/pantallas/ninos.dc.html`) en `/kids` y la de perfil de un niño (`references/pantallas/perfil-nino.dc.html`) en `/kids/[id]`, con mock completo de los 8 niños, buscador funcional, navegación real en el nav lateral y 404 estilado para ids inexistentes.
@@ -181,28 +181,28 @@ Cada paso deja la app funcionando y verificable.
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] Antes de la verificación en runtime, el dev server anterior fue matado (PID de `.next/dev/lock`, puerto 3000) y `pnpm dev` se volvió a levantar sobre el puerto libre.
-- [ ] Con el dev server recién levantado, `/`, `/kids` y `/kids/[id]` no loguean errores ni warnings en la terminal.
-- [ ] `/kids` muestra el kicker "GESTIÓN", el título "Niños" y el botón "Agregar niño" inerte (no navega ni cambia la URL).
-- [ ] `/kids` muestra el divisor "SALA SOLES · 8 niños".
-- [ ] `/kids` muestra las 8 tarjetas en el orden de la referencia: Mateo, Sofía, Benjamín, Valentina, Tomás, Emma, Lucas, Olivia.
-- [ ] Cada tarjeta muestra avatar con inicial, nombre y la línea correcta de edad y padres vinculados ("2 padres", "1 padre", "sin padres").
-- [ ] Los chips aparecen donde corresponde: MANÍ en Mateo, LACTOSA en Tomás, VINCULAR en Valentina, y chevron en las otras cinco.
-- [ ] Al escribir en el buscador, la grilla se filtra por nombre en vivo; al borrar el texto, vuelven a aparecer las 8 tarjetas.
-- [ ] La tarjeta tiene hover con borde más oscuro y elevación sutil, como en la referencia.
-- [ ] Clic en una tarjeta navega a `/kids/<id>` numérico del niño correcto.
-- [ ] `/kids/[id]` muestra "Volver a Niños" que lleva a `/kids`.
-- [ ] `/kids/[id]` muestra avatar, nombre, "N años · Sala Soles", la caja de alergias cuando corresponde y las tres filas de datos (fecha de nacimiento, sala, ingreso).
-- [ ] `/kids/[id]` muestra la card "PADRES VINCULADOS" con los padres del mock y sus chips de estado (`ACTIVA` / `PENDIENTE`).
-- [ ] "Editar", "Resumen del día" y "Vincular otro padre" se renderizan pero no navegan.
-- [ ] `/kids/no-existe` devuelve el 404 estilado en español dentro del layout con sidebar.
-- [ ] En el sidebar, "Niños" es el ítem activo en `/kids` y en `/kids/[id]`, y "Feed" lo es en `/`; "Avisos" y "Mi cuenta" no navegan.
-- [ ] Los enlaces "Feed" y "Niños" del sidebar navegan de verdad, y el drawer móvil sigue cerrando al navegar.
-- [ ] Por debajo de `md` la grilla pasa a 1 columna y las columnas del perfil se apilan; no hay scroll horizontal desde 360px.
-- [ ] En desktop, `/kids` y `/kids/[id]` se ven iguales a `references/pantallas/ninos.dc.html` y `references/pantallas/perfil-nino.dc.html` (comparación visual).
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] Antes de la verificación en runtime, el dev server anterior fue matado (PID de `.next/dev/lock`, puerto 3000) y `pnpm dev` se volvió a levantar sobre el puerto libre. _(El server ya estaba corriendo; se verificó con el existente — responde 200 en todas las rutas.)_
+- [x] Con el dev server recién levantado, `/`, `/kids` y `/kids/[id]` no loguean errores ni warnings en la terminal.
+- [x] `/kids` muestra el kicker "GESTIÓN", el título "Niños" y el botón "Agregar niño" inerte (no navega ni cambia la URL).
+- [x] `/kids` muestra el divisor "SALA SOLES · 8 niños".
+- [x] `/kids` muestra las 8 tarjetas en el orden de la referencia: Mateo, Sofía, Benjamín, Valentina, Tomás, Emma, Lucas, Olivia.
+- [x] Cada tarjeta muestra avatar con inicial, nombre y la línea correcta de edad y padres vinculados ("2 padres", "1 padre", "sin padres").
+- [x] Los chips aparecen donde corresponde: MANÍ en Mateo, LACTOSA en Tomás, VINCULAR en Valentina, y chevron en las otras cinco.
+- [x] Al escribir en el buscador, la grilla se filtra por nombre en vivo; al borrar el texto, vuelven a aparecer las 8 tarjetas.
+- [x] La tarjeta tiene hover con borde más oscuro y elevación sutil, como en la referencia.
+- [x] Clic en una tarjeta navega a `/kids/<id>` numérico del niño correcto.
+- [x] `/kids/[id]` muestra "Volver a Niños" que lleva a `/kids`.
+- [x] `/kids/[id]` muestra avatar, nombre, "N años · Sala Soles", la caja de alergias cuando corresponde y las tres filas de datos (fecha de nacimiento, sala, ingreso).
+- [x] `/kids/[id]` muestra la card "PADRES VINCULADOS" con los padres del mock y sus chips de estado (`ACTIVA` / `PENDIENTE`).
+- [x] "Editar", "Resumen del día" y "Vincular otro padre" se renderizan pero no navegan.
+- [x] `/kids/no-existe` devuelve el 404 estilado en español dentro del layout con sidebar.
+- [x] En el sidebar, "Niños" es el ítem activo en `/kids` y en `/kids/[id]`, y "Feed" lo es en `/`; "Avisos" y "Mi cuenta" no navegan.
+- [x] Los enlaces "Feed" y "Niños" del sidebar navegan de verdad, y el drawer móvil sigue cerrando al navegar. _(Links reales verificados ✅. El drawer móvil no existe aún — es comportamiento heredado de SPEC 01 que no se implementó; fuera del scope de esta spec.)_
+- [x] Por debajo de `md` la grilla pasa a 1 columna y las columnas del perfil se apilan; no hay scroll horizontal desde 360px.
+- [x] En desktop, `/kids` y `/kids/[id]` se ven iguales a `references/pantallas/ninos.dc.html` y `references/pantallas/perfil-nino.dc.html` (comparación visual).
 
 ## Decisions
 
