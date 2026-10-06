@@ -1,5 +1,15 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { classroom, navItems, staff, type NavIcon } from "@/app/_data/mock";
+import {
+  builtNavRoutes,
+  classroom,
+  navItems,
+  staff,
+  type NavIcon,
+} from "@/app/_data/mock";
 
 const NAV_ICONS: Record<NavIcon, ReactNode> = {
   home: (
@@ -67,10 +77,17 @@ interface SidebarProps {
   onNavigate?: () => void;
 }
 
+function isNavRouteActive(href: string, pathname: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export default function Sidebar({ onNavigate }: SidebarProps) {
+  const pathname = usePathname();
+
   return (
     <aside className="flex h-full w-[248px] shrink-0 flex-col border-r border-line bg-surface px-4 py-6">
-      <a className="flex items-center gap-[11px] px-2 pb-[22px] pt-1">
+      <Link href="/" className="flex items-center gap-[11px] px-2 pb-[22px] pt-1">
         <span className="flex size-[38px] flex-none items-center justify-center rounded-xl bg-linear-[155deg] from-accent-mist to-accent-pale">
           <svg
             width="21"
@@ -91,12 +108,13 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             OpenDayCare
           </span>
           <span className="mt-0.5 block text-[11.5px] text-ink-ghost">
-            {classroom.name}
-          </span>
+          {classroom.name}
         </span>
-      </a>
+      </span>
+      </Link>
 
-      <a
+      <Link
+        href="#"
         onClick={onNavigate}
         className="mb-[18px] flex w-full items-center justify-center gap-2 rounded-[14px] bg-linear-to-b from-accent-mid to-[#ee8164] py-3 font-extrabold text-[14.5px] text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
       >
@@ -113,23 +131,44 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
           <path d="M12 5v14M5 12h14" />
         </svg>
         Nueva publicación
-      </a>
+      </Link>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {navItems.map((item) => (
-          <a
-            key={item.label}
-            onClick={onNavigate}
-            className={
-              item.isActive
-                ? "flex items-center gap-3 rounded-xl bg-accent-wash px-3 py-[11px] text-[14.5px] font-extrabold text-accent"
-                : "flex items-center gap-3 rounded-xl px-3 py-[11px] text-[14.5px] font-semibold text-ink-muted"
-            }
-          >
-            {NAV_ICONS[item.icon]}
-            {item.label}
-          </a>
-        ))}
+        {navItems.map((item) => {
+          const isBuilt = builtNavRoutes.includes(item.href);
+          const isActive = isBuilt && isNavRouteActive(item.href, pathname);
+          const className = isActive
+            ? "flex items-center gap-3 rounded-xl bg-accent-wash px-3 py-[11px] text-[14.5px] font-extrabold text-accent"
+            : "flex items-center gap-3 rounded-xl px-3 py-[11px] text-[14.5px] font-semibold text-ink-muted";
+
+          if (!isBuilt) {
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onNavigate}
+                className={className}
+                aria-disabled="true"
+              >
+                {NAV_ICONS[item.icon]}
+                {item.label}
+              </Link>
+            );
+          }
+
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={onNavigate}
+              aria-current={isActive ? "page" : undefined}
+              className={className}
+            >
+              {NAV_ICONS[item.icon]}
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="mt-[10px] border-t border-line pt-[14px]">

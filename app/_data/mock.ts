@@ -19,7 +19,6 @@ export interface NavItem {
   label: string;
   href: string;
   icon: NavIcon;
-  isActive?: boolean;
 }
 
 export interface SidebarUser {
@@ -53,11 +52,13 @@ export const classroom: Classroom = {
 };
 
 export const navItems: NavItem[] = [
-  { label: "Feed", href: "/", icon: "home", isActive: true },
-  { label: "Niños", href: "/ninos", icon: "kids" },
+  { label: "Feed", href: "/", icon: "home" },
+  { label: "Niños", href: "/kids", icon: "kids" },
   { label: "Avisos", href: "/avisos", icon: "bell" },
   { label: "Mi cuenta", href: "/mi-cuenta", icon: "user" },
 ];
+
+export const builtNavRoutes: readonly string[] = ["/", "/kids"];
 
 export const posts: FeedPost[] = [
   {
