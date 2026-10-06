@@ -1,6 +1,6 @@
 # SPEC 03 — Login `/login` y activar cuenta `/activate-account`
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 01 (`specs/01-home-feed.md`) — hereda tokens de `globals.css`, fuentes del root layout y el patrón de mocks en `app/_data/`
 > **Date:** 2026-10-06
 > **Objective:** Implementar las pantallas Login (`references/pantallas/login.dc.html`) en `/login` y Activar cuenta (`references/pantallas/activar-cuenta.dc.html`) en `/activate-account`, como páginas pre-autenticación en un route group nuevo `app/(auth)/` sin sidebar, con fidelidad visual total en desktop (sin la sección "INGRESO COMO" del login) y responsive sin scroll horizontal desde 360px, sin autenticación real.
@@ -113,26 +113,26 @@ Cada paso deja la app funcionando y verificable.
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), `/login` y `/activate-account` no loguean errores ni warnings en la terminal.
-- [ ] Ni `/login` ni `/activate-account` muestran el sidebar ni el layout de `(daycare)`; `/`, `/kids` y `/kids/[id]` siguen funcionando igual.
-- [ ] `/login` en desktop muestra el grid de dos columnas y el panel coral con gradiente 155deg, los dos círculos blancos translúcidos, el logo con sol, el titular "El día de cada niño, compartido con su familia.", la tagline y el footer "🌿 Guardería Sala Soles".
-- [ ] `/login` no renderiza la sección "INGRESO COMO" ni los botones "Personal" / "Familia".
-- [ ] El input EMAIL está vacío con placeholder `caro@opendaycare.com` en `#B6A99B`; CONTRASEÑA es `type="password"` con placeholder `••••••••`; ambos editables y sin validación.
-- [ ] "¿Olvidaste tu contraseña?" se renderiza y no navega.
-- [ ] El botón "Iniciar sesión" navega a `/` (feed).
-- [ ] El link "Activá tu cuenta" navega a `/activate-account`.
-- [ ] Bajo `md`: el panel coral desaparece, la marca compacta aparece encima del form y no hay scroll horizontal desde 360px.
-- [ ] `/activate-account` muestra el tile degradado con el sol, "Bienvenida a OpenDayCare" y su subtítulo.
-- [ ] La card de invitación muestra el avatar "M" (celeste `#A9D9E8` / `#1F7A93`), "Te invitaron a seguir a" y "Mateo · Sala Soles", alimentada por `app/_data/invite.ts`.
-- [ ] Los campos CÓDIGO (`7K4P9`, Fredoka, tracking 3px), EMAIL (`lucia.fernandez@gmail.com`) y CREAR CONTRASEÑA (enmascarado, borde `#F2A78E`) van precargados como en la referencia.
-- [ ] El checkbox de autorización arranca marcado (check verde) y alterna su estado al clic; sin persistencia.
-- [ ] El botón "Activar mi cuenta" se renderiza y no navega.
-- [ ] El link "Iniciar sesión" del footer navega a `/login`.
-- [ ] Las pestañas muestran "Iniciar sesión · OpenDayCare" y "Activar cuenta · OpenDayCare".
-- [ ] En desktop, `/login` y `/activate-account` se ven idénticas a sus referencias `.dc.html` (comparación visual; única salvedad: la sección de rol eliminada por decisión).
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), `/login` y `/activate-account` no loguean errores ni warnings en la terminal.
+- [x] Ni `/login` ni `/activate-account` muestran el sidebar ni el layout de `(daycare)`; `/`, `/kids` y `/kids/[id]` siguen funcionando igual.
+- [x] `/login` en desktop muestra el grid de dos columnas y el panel coral con gradiente 155deg, los dos círculos blancos translúcidos, el logo con sol, el titular "El día de cada niño, compartido con su familia.", la tagline y el footer "🌿 Guardería Sala Soles".
+- [x] `/login` no renderiza la sección "INGRESO COMO" ni los botones "Personal" / "Familia".
+- [x] El input EMAIL está vacío con placeholder `caro@opendaycare.com` en `#B6A99B`; CONTRASEÑA es `type="password"` con placeholder `••••••••`; ambos editables y sin validación.
+- [x] "¿Olvidaste tu contraseña?" se renderiza y no navega.
+- [x] El botón "Iniciar sesión" navega a `/` (feed).
+- [x] El link "Activá tu cuenta" navega a `/activate-account`.
+- [x] Bajo `md`: el panel coral desaparece, la marca compacta aparece encima del form y no hay scroll horizontal desde 360px.
+- [x] `/activate-account` muestra el tile degradado con el sol, "Bienvenida a OpenDayCare" y su subtítulo.
+- [x] La card de invitación muestra el avatar "M" (celeste `#A9D9E8` / `#1F7A93`), "Te invitaron a seguir a" y "Mateo · Sala Soles", alimentada por `app/_data/invite.ts`.
+- [x] Los campos CÓDIGO (`7K4P9`, Fredoka, tracking 3px), EMAIL (`lucia.fernandez@gmail.com`) y CREAR CONTRASEÑA (enmascarado, borde `#F2A78E`) van precargados como en la referencia.
+- [x] El checkbox de autorización arranca marcado (check verde) y alterna su estado al clic; sin persistencia.
+- [x] El botón "Activar mi cuenta" se renderiza y no navega.
+- [x] El link "Iniciar sesión" del footer navega a `/login`.
+- [x] Las pestañas muestran "Iniciar sesión · OpenDayCare" y "Activar cuenta · OpenDayCare".
+- [x] En desktop, `/login` y `/activate-account` se ven idénticas a sus referencias `.dc.html` (comparación visual; única salvedad: la sección de rol eliminada por decisión).
 
 ## Decisions
 
