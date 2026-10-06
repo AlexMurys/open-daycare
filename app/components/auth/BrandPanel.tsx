@@ -1,6 +1,6 @@
 export default function BrandPanel() {
   return (
-    <div className="relative flex flex-col justify-between overflow-hidden bg-linear-[155deg] from-[#f6a98e] from-0% via-[#f2937a] via-45% to-[#ec7e62] px-[60px] py-14 text-white">
+    <div className="relative hidden content-between overflow-hidden bg-linear-[155deg] from-[#f6a98e] from-0% via-[#f2937a] via-45% to-[#ec7e62] px-[60px] py-14 text-white md:grid">
       <div className="absolute top-[-140px] right-[-120px] size-[420px] rounded-full bg-white/12" />
       <div className="absolute bottom-[-110px] left-[-80px] size-[300px] rounded-full bg-white/10" />
 
