@@ -6,7 +6,7 @@ import { rooms } from "@/app/_data/rooms";
 const LABEL_CLASS =
   "mb-2 block text-[12px] font-extrabold tracking-[0.7px] text-ink-faint";
 const INPUT_CLASS =
-  "w-full rounded-[14px] border-[1.5px] border-auth-line bg-white px-4 py-[13px] text-[15px] text-ink placeholder:text-[#b6a99b] focus:outline-none";
+  "w-full rounded-[14px] border-[1.5px] bg-white px-4 py-[13px] text-[15px] text-ink placeholder:text-[#b6a99b] focus:outline-none";
 const ERROR_CLASS = "mt-1.5 block text-[13px] font-bold text-accent";
 
 const DAY_MAX = 31;
@@ -320,7 +320,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
                 if (nameError) setNameError(null);
               }}
               aria-invalid={nameError ? true : undefined}
-              className={`${INPUT_CLASS} ${nameError ? "border-accent" : ""}`}
+              className={`${INPUT_CLASS} ${nameError ? "border-accent" : "border-auth-line"}`}
             />
             {nameError && <p className={ERROR_CLASS}>{nameError}</p>}
           </div>
@@ -339,7 +339,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
                 value={birthdate}
                 onChange={(event) => handleBirthdateChange(event.target.value)}
                 aria-invalid={birthdateError ? true : undefined}
-                className={`${INPUT_CLASS} ${birthdateError ? "border-accent" : ""}`}
+                className={`${INPUT_CLASS} ${birthdateError ? "border-accent" : "border-auth-line"}`}
               />
               {birthdateError && <p className={ERROR_CLASS}>{birthdateError}</p>}
             </div>
@@ -360,7 +360,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
                   }
                   onClick={toggleRoomList}
                   onKeyDown={handleRoomKeyDown}
-                  className={`${INPUT_CLASS} cursor-pointer truncate pr-10 font-bold`}
+                  className={`${INPUT_CLASS} cursor-pointer truncate border-auth-line pr-10 font-bold`}
                 >
                   {room}
                 </div>
@@ -419,7 +419,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
               value={allergyDraft}
               onChange={(event) => handleAllergyChange(event.target.value)}
               onKeyDown={handleAllergyKeyDown}
-              className={INPUT_CLASS}
+              className={`${INPUT_CLASS} border-auth-line`}
             />
             <div className="mt-2 flex flex-wrap gap-2">
               {allergies.map((allergy, index) => (
@@ -460,7 +460,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
             placeholder="Indicaciones, medicación, contactos…"
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
-            className={`${INPUT_CLASS} min-h-[90px] resize-y leading-normal`}
+            className={`${INPUT_CLASS} min-h-[90px] resize-y border-auth-line leading-normal`}
           />
         </div>
       </form>
