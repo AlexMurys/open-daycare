@@ -18,8 +18,8 @@ SPEC 02 dejó el botón "Agregar niño" inerte a la espera de esta pantalla. Es 
   - Cabecera con **Cancelar** (`ink-faint`), título "Agregar niño" (Fredoka 18px) y **Guardar** (`accent`), sobre borde inferior.
   - Labels 12px extrabold con tracking `.7px` en `#94887B` + inputs blancos radio 14px borde 1.5px `auth-line`, placeholder `#B6A99B`.
 - **NOMBRE COMPLETO** (obligatorio): input con placeholder "Ej. Martina López".
-- **FECHA DE NACIMIENTO** (obligatorio): máscara dd/mm/aaaa — solo dígitos, `/` autoinsertada al completar día y mes, largo máximo 10, borrado sensato (Backspace salta la barra en vez de dejarla colgando), `inputMode="numeric"`. Al guardar valida fecha real del calendario (p.ej. 31/02/2025 rechazada) y no futura (mañana en adelante rechazada; hoy válida).
-- **SALA** (obligatorio): `<select>` nativo con trigger estilado como la referencia (valor + chevron), opciones **Soles, Lunas, Estrellas** desde `app/_data/rooms.ts`; arranca en **Soles**, sin opción vacía.
+- **FECHA DE NACIMIENTO** (obligatorio): máscara dd/mm/aaaa — solo dígitos, `/` autoinsertada al completar día y mes, largo máximo 10, borrado sensato (Backspace salta la barra en vez de dejarla colgando), `inputMode="numeric"`. Al tipear se rechazan los dígitos que dejarían el campo fuera de rango: día > 31 (p.ej. "32") o mes > 12 (p.ej. "13"). Al guardar valida fecha real del calendario (p.ej. 31/02/2025 rechazada) y no futura (mañana en adelante rechazada; hoy válida).
+- **SALA** (obligatorio): combobox custom (`role="combobox"` + `role="listbox"`) con trigger estilado como la referencia (valor + chevron); al abrir despliega la lista **justo debajo del trigger, dentro del dialog y con el ancho del campo** (si no cabe debajo, se abre hacia arriba). Opciones **Soles, Lunas, Estrellas** desde `app/_data/rooms.ts`; arranca en **Soles**, sin opción vacía. Teclado: Enter/Space/flechas abren, flechas navegan, Enter/Space seleccionan, Escape cierra (sin cerrar el dialog), Tab cierra y avanza.
 - **ALERGIAS (ETIQUETAS)** (opcional): input de chips — escribir y pulsar **Enter** o **coma** crea la etiqueta, cada chip con **X** para quitarla; Enter en este input no dispara Guardar. Chips con la paleta del chip de alergia de la grilla (`#FBD8CC`/`#D9684A`).
 - **NOTAS MÉDICAS** (opcional): textarea `min-height 90px`, placeholder "Indicaciones, medicación, contactos…", `resize: vertical`.
 - **Validación al Guardar** (submit del `<form>`): los obligatorios inválidos (nombre vacío; fecha incompleta, inexistente o futura) marcan borde `accent` y mensaje de error en español bajo el campo. Guardar siempre habilitado. Con todo válido, Guardar **cierra el dialog** sin tocar la grilla ni los mocks. Enter en los campos de texto dispara la misma validación.
@@ -89,7 +89,9 @@ Cada paso deja la app funcionando y verificable.
 - [ ] Click en "Agregar niño" abre el dialog sobre `/kids` sin cambiar la URL; el fondo queda oscurecido y el scroll de la página bloqueado mientras está abierto.
 - [ ] En desktop, el dialog replica `references/pantallas/agregar-nino.dc.html`: card 520px crema, cabecera Cancelar/"Agregar niño"/Guardar, labels en caps con tracking, inputs blancos radio 14px y placeholders "Ej. Martina López", "dd/mm/aaaa", "Ej. Maní, Lactosa", "Indicaciones, medicación, contactos…".
 - [ ] El foco entra al dialog en NOMBRE COMPLETO y queda atrapado dentro (Tab no sale); al cerrar, el foco vuelve al botón "Agregar niño".
-- [ ] El select de sala muestra exactamente Soles, Lunas y Estrellas, arranca en Soles y su trigger se ve como la referencia (chevron).
+- [ ] El selector de sala muestra exactamente Soles, Lunas y Estrellas, arranca en Soles y su trigger se ve como la referencia (chevron).
+- [ ] Al tipear no se puede formar un día > 31 ni un mes > 12: esos dígitos se ignoran al escribir (p.ej. "32" en día queda "3", "13" en mes queda "1").
+- [ ] La lista del selector de sala se abre justo debajo del trigger, dentro del dialog y con el ancho del campo SALA; si no cabe debajo se abre hacia arriba. Escape cierra la lista sin cerrar el dialog.
 - [ ] Tipear "31082022" en fecha produce "31/08/2022"; solo se aceptan dígitos, sin pasar de 10 caracteres; Backspace no deja barras colgando.
 - [ ] Guardar con nombre vacío muestra borde y mensaje de error bajo NOMBRE COMPLETO y no cierra el dialog.
 - [ ] Guardar con fecha incompleta, inexistente (31/02/2025) o futura muestra borde y mensaje bajo FECHA DE NACIMIENTO y no cierra el dialog.
@@ -109,7 +111,8 @@ Cada paso deja la app funcionando y verificable.
 - **Sí:** máscara dd/mm/aaaa + validación de fecha real y no futura al guardar. _(decisión del usuario)_
 - **Sí:** salas hardcode Soles, Lunas, Estrellas. _(decisión del usuario)_
 - **Sí:** chips interactivas para alergias (Enter/coma agregan, X quita). _(decisión del usuario)_
-- **Sí:** `<select>` nativo con trigger estilado — accesible por teclado sin construir un listbox propio. _(decisión del usuario)_
+- **Sí:** combobox custom para SALA (`role="combobox"` + `role="listbox"`, lista justo debajo del trigger dentro del dialog, con flip si no cabe) en vez de `<select>` nativo. _(cambio de decisión del usuario: el popup nativo se abre fuera del modal y con un tamaño que no corresponde al campo)_
+- **Sí:** la máscara rechaza al tipear los dígitos que dejarían día > 31 o mes > 12; la validación de calendario y de fecha futura sigue siendo al Guardar. _(cambio de decisión del usuario)_
 - **Sí:** cierre por Cancelar + Escape + backdrop, con focus trap. _(decisión del usuario)_
 - **Sí:** `app/_data/rooms.ts` como módulo propio, siguiendo el patrón de mocks por dominio (`kids.ts`, `invite.ts`). _(decisión del usuario)_
 - **Sí:** sala "obligatoria" satisfecha por default — el select arranca en Soles como en la referencia y no ofrece opción vacía, así que no puede fallar validación.

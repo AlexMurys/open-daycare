@@ -9,8 +9,16 @@ const INPUT_CLASS =
   "w-full rounded-[14px] border-[1.5px] border-auth-line bg-white px-4 py-[13px] text-[15px] text-ink placeholder:text-[#b6a99b] focus:outline-none";
 const ERROR_CLASS = "mt-1.5 block text-[13px] font-bold text-accent";
 
-function maskBirthdate(raw: string, deleting: boolean): string {
-  const digits = raw.replace(/\D/g, "").slice(0, 8);
+const DAY_MAX = 31;
+const MONTH_MAX = 12;
+
+function exceedsMax(candidate: string): boolean {
+  if (candidate.length === 2) return Number(candidate) > DAY_MAX;
+  if (candidate.length === 4) return Number(candidate.slice(2)) > MONTH_MAX;
+  return false;
+}
+
+function formatBirthdate(digits: string, deleting: boolean): string {
   if (digits.length <= 2) {
     return digits.length === 2 && !deleting ? `${digits}/` : digits;
   }
@@ -22,6 +30,18 @@ function maskBirthdate(raw: string, deleting: boolean): string {
       : `${day}/${month}`;
   }
   return `${day}/${month}/${digits.slice(4)}`;
+}
+
+function maskBirthdate(prev: string, raw: string): string {
+  const deleting = raw.length < prev.length;
+  const rawDigits = raw.replace(/\D/g, "").slice(0, 8);
+  let digits = "";
+  for (const digit of rawDigits) {
+    const candidate = digits + digit;
+    if (exceedsMax(candidate)) continue;
+    digits = candidate;
+  }
+  return formatBirthdate(digits, deleting);
 }
 
 function validateBirthdate(value: string): string | null {
@@ -52,10 +72,15 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const prevBirthdateRef = useRef("");
+  const roomWrapRef = useRef<HTMLDivElement>(null);
+  const roomTriggerRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState("");
   const [birthdate, setBirthdate] = useState("");
   const [room, setRoom] = useState<string>(rooms[0]);
+  const [roomOpen, setRoomOpen] = useState(false);
+  const [roomUp, setRoomUp] = useState(false);
+  const [roomHighlight, setRoomHighlight] = useState(0);
   const [allergies, setAllergies] = useState<string[]>([]);
   const [allergyDraft, setAllergyDraft] = useState("");
   const [notes, setNotes] = useState("");
@@ -66,6 +91,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
     setName("");
     setBirthdate("");
     setRoom(rooms[0]);
+    setRoomOpen(false);
     setAllergies([]);
     setAllergyDraft("");
     setNotes("");
@@ -93,6 +119,17 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!roomOpen) return;
+    function handlePointerDown(event: PointerEvent) {
+      if (!roomWrapRef.current?.contains(event.target as Node)) {
+        setRoomOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [roomOpen]);
+
   function handleClose() {
     resetForm();
     onClose();
@@ -100,6 +137,91 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
 
   function handleBackdropClick(event: React.MouseEvent<HTMLDialogElement>) {
     if (event.target === dialogRef.current) handleClose();
+  }
+
+  function handleDialogKeyDown(event: React.KeyboardEvent<HTMLDialogElement>) {
+    if (event.key === "Escape" && roomOpen) {
+      event.preventDefault();
+      setRoomOpen(false);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    if (roomOpen) setRoomOpen(false);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const focusables = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        "button, input, select, textarea, a[href], [tabindex]"
+      )
+    ).filter(
+      (el) => !el.hasAttribute("disabled") && el.getClientRects().length > 0
+    );
+    if (focusables.length === 0) return;
+    const active = document.activeElement as HTMLElement | null;
+    const index = active ? focusables.indexOf(active) : -1;
+    event.preventDefault();
+    if (event.shiftKey) {
+      const prev = index <= 0 ? focusables.length - 1 : index - 1;
+      focusables[prev].focus();
+    } else {
+      const next = index === -1 || index === focusables.length - 1 ? 0 : index + 1;
+      focusables[next].focus();
+    }
+  }
+
+  function openRoomList() {
+    setRoomOpen(true);
+    setRoomHighlight(Math.max(0, rooms.indexOf(room)));
+  }
+
+  function toggleRoomList() {
+    if (roomOpen) {
+      setRoomOpen(false);
+      return;
+    }
+    const wrap = roomWrapRef.current;
+    const dialog = dialogRef.current;
+    let up = false;
+    if (wrap && dialog) {
+      const wrapRect = wrap.getBoundingClientRect();
+      const dialogRect = dialog.getBoundingClientRect();
+      const menuHeight = rooms.length * 44 + 11;
+      const spaceBelow = dialogRect.bottom - wrapRect.bottom;
+      const spaceAbove = wrapRect.top - dialogRect.top;
+      up = menuHeight + 12 > spaceBelow && spaceAbove > spaceBelow;
+    }
+    setRoomUp(up);
+    openRoomList();
+  }
+
+  function selectRoom(option: string) {
+    setRoom(option);
+    setRoomOpen(false);
+    roomTriggerRef.current?.focus();
+  }
+
+  function handleRoomKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        if (!roomOpen) openRoomList();
+        else setRoomHighlight((index) => (index + 1) % rooms.length);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        if (!roomOpen) openRoomList();
+        else
+          setRoomHighlight(
+            (index) => (index - 1 + rooms.length) % rooms.length
+          );
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        if (!roomOpen) openRoomList();
+        else selectRoom(rooms[roomHighlight]);
+        break;
+    }
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -113,8 +235,8 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
   }
 
   function handleBirthdateChange(raw: string) {
-    const deleting = raw.length < prevBirthdateRef.current.length;
-    const masked = maskBirthdate(raw, deleting);
+    const prev = prevBirthdateRef.current;
+    const masked = maskBirthdate(prev, raw);
     prevBirthdateRef.current = masked;
     setBirthdate(masked);
     if (birthdateError) setBirthdateError(null);
@@ -153,6 +275,13 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
       aria-label="Agregar niño"
       onClose={handleClose}
       onClick={handleBackdropClick}
+      onKeyDown={handleDialogKeyDown}
+      onCancel={(event) => {
+        if (roomOpen) {
+          event.preventDefault();
+          setRoomOpen(false);
+        }
+      }}
       className="m-auto max-h-[calc(100vh-48px)] w-[calc(100%-32px)] max-w-[520px] overflow-hidden rounded-[24px] border border-line bg-auth-canvas p-0 shadow-[0_20px_50px_-24px_rgba(63,54,46,0.35)] [&::backdrop]:bg-[rgba(63,54,46,0.45)]"
     >
       <form onSubmit={handleSubmit} className="flex max-h-[calc(100vh-48px)] flex-col">
@@ -160,7 +289,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
           <button
             type="button"
             onClick={handleClose}
-            className="text-[15px] font-bold text-ink-faint"
+            className="cursor-pointer text-[15px] font-bold text-ink-faint"
           >
             Cancelar
           </button>
@@ -169,7 +298,7 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
           </span>
           <button
             type="submit"
-            className="text-[15px] font-extrabold text-accent"
+            className="cursor-pointer text-[15px] font-extrabold text-accent"
           >
             Guardar
           </button>
@@ -215,24 +344,28 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
               {birthdateError && <p className={ERROR_CLASS}>{birthdateError}</p>}
             </div>
             <div className="flex-1">
-              <label htmlFor="add-kid-room" className={LABEL_CLASS}>
+              <label id="add-kid-room-label" className={LABEL_CLASS}>
                 SALA
               </label>
-              <div className="relative">
-                <select
-                  id="add-kid-room"
-                  value={room}
-                  onChange={(event) => setRoom(event.target.value)}
-                  className={`${INPUT_CLASS} cursor-pointer appearance-none pr-10 font-bold`}
+              <div ref={roomWrapRef} className="relative">
+                <div
+                  ref={roomTriggerRef}
+                  role="combobox"
+                  tabIndex={0}
+                  aria-labelledby="add-kid-room-label"
+                  aria-expanded={roomOpen}
+                  aria-controls="add-kid-room-list"
+                  aria-activedescendant={
+                    roomOpen ? `add-kid-room-option-${roomHighlight}` : undefined
+                  }
+                  onClick={toggleRoomList}
+                  onKeyDown={handleRoomKeyDown}
+                  className={`${INPUT_CLASS} cursor-pointer truncate pr-10 font-bold`}
                 >
-                  {rooms.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                  {room}
+                </div>
                 <svg
-                  className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2"
+                  className={`pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 transition-transform ${roomOpen ? "rotate-180" : ""}`}
                   width="16"
                   height="16"
                   viewBox="0 0 24 24"
@@ -244,6 +377,33 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
                 >
                   <path d="m6 9 6 6 6-6" />
                 </svg>
+                {roomOpen && (
+                  <ul
+                    id="add-kid-room-list"
+                    role="listbox"
+                    aria-labelledby="add-kid-room-label"
+                    className={`absolute left-0 right-0 z-20 max-h-[176px] overflow-y-auto rounded-[14px] border-[1.5px] border-auth-line bg-white py-1 shadow-[0_16px_34px_-14px_rgba(63,54,46,0.45)] ${roomUp ? "bottom-full mb-1" : "top-full mt-1"}`}
+                  >
+                    {rooms.map((option, index) => (
+                      <li
+                        key={option}
+                        id={`add-kid-room-option-${index}`}
+                        role="option"
+                        aria-selected={option === room}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => selectRoom(option)}
+                        onMouseEnter={() => setRoomHighlight(index)}
+                        className={`cursor-pointer px-4 py-[11px] text-[15px] font-bold ${
+                          index === roomHighlight
+                            ? "bg-auth-canvas text-ink"
+                            : "text-ink-body"
+                        }`}
+                      >
+                        {option}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
