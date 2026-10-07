@@ -63,12 +63,21 @@ function validateBirthdate(value: string): string | null {
   return null;
 }
 
+export type NewKidInput = {
+  name: string;
+  birthdate: string;
+  room: string;
+  allergies: string[];
+  notes: string;
+};
+
 type AddKidDialogProps = {
   open: boolean;
   onClose: () => void;
+  onSave: (input: NewKidInput) => void;
 };
 
-export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
+export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const prevBirthdateRef = useRef("");
@@ -231,6 +240,13 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
     setNameError(nextNameError);
     setBirthdateError(nextBirthdateError);
     if (nextNameError || nextBirthdateError) return;
+    onSave({
+      name: name.trim(),
+      birthdate,
+      room,
+      allergies,
+      notes,
+    });
     handleClose();
   }
 

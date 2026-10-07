@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import AddKidDialog from "./AddKidDialog";
+import AddKidDialog, { type NewKidInput } from "./AddKidDialog";
 
-export default function AddKidButton() {
+type AddKidButtonProps = {
+  onAddKid: (input: NewKidInput) => void;
+};
+
+export default function AddKidButton({ onAddKid }: AddKidButtonProps) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
@@ -37,7 +41,11 @@ export default function AddKidButton() {
         </svg>
         Agregar niño
       </button>
-      <AddKidDialog open={open} onClose={() => setOpen(false)} />
+      <AddKidDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onSave={onAddKid}
+      />
     </>
   );
 }

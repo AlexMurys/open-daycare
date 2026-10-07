@@ -22,7 +22,7 @@ SPEC 02 dejó el botón "Agregar niño" inerte a la espera de esta pantalla. Es 
 - **SALA** (obligatorio): combobox custom (`role="combobox"` + `role="listbox"`) con trigger estilado como la referencia (valor + chevron); al abrir despliega la lista **justo debajo del trigger, dentro del dialog y con el ancho del campo** (si no cabe debajo, se abre hacia arriba). Opciones **Soles, Lunas, Estrellas** desde `app/_data/rooms.ts`; arranca en **Soles**, sin opción vacía. Teclado: Enter/Space/flechas abren, flechas navegan, Enter/Space seleccionan, Escape cierra (sin cerrar el dialog), Tab cierra y avanza.
 - **ALERGIAS (ETIQUETAS)** (opcional): input de chips — escribir y pulsar **Enter** o **coma** crea la etiqueta, cada chip con **X** para quitarla; Enter en este input no dispara Guardar. Chips con la paleta del chip de alergia de la grilla (`#FBD8CC`/`#D9684A`).
 - **NOTAS MÉDICAS** (opcional): textarea `min-height 90px`, placeholder "Indicaciones, medicación, contactos…", `resize: vertical`.
-- **Validación al Guardar** (submit del `<form>`): los obligatorios inválidos (nombre vacío; fecha incompleta, inexistente o futura) marcan borde `accent` y mensaje de error en español bajo el campo. Guardar siempre habilitado. Con todo válido, Guardar **cierra el dialog** sin tocar la grilla ni los mocks. Enter en los campos de texto dispara la misma validación.
+- **Validación al Guardar** (submit del `<form>`): los obligatorios inválidos (nombre vacío; fecha incompleta, inexistente o futura) marcan borde `accent` y mensaje de error en español bajo el campo. Guardar siempre habilitado. Con todo válido, Guardar **cierra el dialog** y agrega el niño como nueva tarjeta en la grilla de `/kids` (estado en memoria de la página, sin persistencia); los mocks `app/_data/kids.ts` no se tocan y el contador del divisor pasa a ser dinámico. Enter en los campos de texto dispara la misma validación.
 - **Cierre**: botón Cancelar, tecla Escape y click en el backdrop cierran y descartan. `<dialog>` nativo con `showModal()` (focus trap y Escape gratis); click del backdrop detectado sobre el propio dialog; `overflow: hidden` en `body` mientras está abierto; foco inicial en NOMBRE COMPLETO; al cerrar, el foco vuelve al botón "Agregar niño".
 - **Estado inicial en cada apertura**: campos vacíos, sala Soles, sin chips, sin errores.
 - Responsive: card con margen lateral en viewport angosto, sin scroll horizontal desde 360px; en pantallas bajas el cuerpo del dialog scrollea internamente.
@@ -30,8 +30,8 @@ SPEC 02 dejó el botón "Agregar niño" inerte a la espera de esta pantalla. Es 
 
 **Out of scope (for future specs):**
 
-- Persistencia y mutaciones: Guardar no agrega el niño a la grilla ni modifica `app/_data/kids.ts` (mocks constantes, sin backend).
-- La grilla de `/kids` no se agrupa por sala ni muestra Lunas/Estrellas: sigue literal "SALA SOLES · 8 niños" como su referencia.
+- Persistencia: el niño agregado vive solo en el estado de `/kids` (se pierde al refrescar la página); Guardar no modifica `app/_data/kids.ts` (mocks constantes, sin backend).
+- La grilla de `/kids` no se agrupa por sala: el divisor sigue literal "SALA SOLES" (solo el contador de niños pasa a dinámico, y los niños de Lunas/Estrellas se listan en la misma grilla única).
 - Date picker con calendario: la fecha se ingresa solo con máscara de texto.
 - Vincular padres, editar niño, resumen del día (siguen inertes).
 - Validación de nombre más allá de no-vacío (sin largo mínimo ni formato).
@@ -44,7 +44,7 @@ SPEC 02 dejó el botón "Agregar niño" inerte a la espera de esta pantalla. Es 
 export const rooms: readonly string[] = ["Soles", "Lunas", "Estrellas"];
 ```
 
-No hay estructuras nuevas persistidas: el estado del formulario vive en `AddKidDialog.tsx` (`useState`: nombre, fecha enmascarada, sala, `allergies: string[]`, notas, errores por campo). El tipo `Kid` y `kids.ts` no se tocan.
+No hay estructuras nuevas persistidas: el estado del formulario vive en `AddKidDialog.tsx` (`useState`: nombre, fecha enmascarada, sala, `allergies: string[]`, notas, errores por campo) y la lista visible de niños vive en `KidsScreen.tsx` (`useState<Kid[]>` inicializado con `kids`). El tipo `Kid` y `kids.ts` no se tocan; el niño nuevo se construye en memoria (`toKid`) y desaparece al refrescar.
 
 ## Estructura de archivos
 
@@ -55,14 +55,15 @@ app/
     rooms.ts                        # NUEVO: rooms = ["Soles","Lunas","Estrellas"]
   components/
     kids/
+      KidsScreen.tsx                # NUEVO (client): estado de la lista de niños + header + divisor con contador dinámico
       AddKidButton.tsx              # NUEVO (client): botón coral "Agregar niño" + useState + <AddKidDialog />
       AddKidDialog.tsx              # NUEVO (client): <dialog>, overlay, card, campos, máscara, chips, validación, cierre
   (daycare)/
     kids/
-      page.tsx                      # el <button> inerte del header se reemplaza por <AddKidButton />
+      page.tsx                      # server component de 3 líneas: <KidsScreen initialKids={kids} />
 ```
 
-`/kids` sigue siendo server component: solo el subtree del botón/dialog pasa a cliente. Los elementos inertes de otras pantallas no se tocan.
+`/kids` sigue siendo server component: solo el subtree de la lista/botón/dialog pasa a cliente (`KidsScreen` es la raíz client que comparte estado entre el botón y la grilla). Los elementos inertes de otras pantallas no se tocan.
 
 ## Implementation plan
 
@@ -72,13 +73,13 @@ Cada paso deja la app funcionando y verificable.
 2. **`AddKidDialog.tsx` (shell estático)**: `<dialog>` con `showModal()/close()` controlado por props `open`/`onClose`, `aria-label "Agregar niño"`, backdrop estilado, card de la referencia (cabecera Cancelar/título/Guardar, labels, inputs, `<select>` desde `rooms` con chevron, textarea), `<form>` con Guardar `type="submit"` y Cancelar `type="button"`. Manual: `pnpm exec tsc --noEmit` (aún no está montado).
 3. **Máscara de fecha y chips de alergias**: interacción de los dos campos especiales según Scope. Manual: `tsc`.
 4. **Validación y cierre**: errores en línea al Guardar, cierre por Cancelar/Escape/backdrop, foco inicial en nombre, foco de vuelta al trigger, `overflow: hidden` en `body` mientras el dialog está abierto. Manual: `tsc`.
-5. **Montaje**: `AddKidButton.tsx` (botón idéntico al actual + estado) reemplaza el botón inerte en `app/(daycare)/kids/page.tsx`. Manual: `/kids` abre y cierra el dialog completo.
+5. **Montaje**: `KidsScreen.tsx` (estado de la lista + header + divisor dinámico) con `AddKidButton.tsx` (botón idéntico al actual + estado) montado en `app/(daycare)/kids/page.tsx`, ahora wrapper server. Manual: `/kids` abre y cierra el dialog completo.
 6. **Pulido de fidelidad y responsive**: comparación lado a lado contra `references/pantallas/agregar-nino.dc.html` en desktop; márgenes en angosto; sin scroll horizontal desde 360px; recorrido completo con teclado (Tab/Escape).
 7. **Verificación final con reinicio limpio del dev server** (en ese orden, sin saltos):
    1. `pnpm exec eslint app`, `pnpm exec tsc --noEmit` y `pnpm build` terminan sin errores.
    2. Matar el dev server corriendo: leer el PID y el puerto de `.next/dev/lock`; si vive, `kill <pid>` y confirmar el puerto libre; si no hay lock, revisar `lsof -ti :3000` y matar solo los de este proyecto.
    3. Re-levantar con `pnpm dev`.
-   4. Comprobar en runtime, sin errores ni warnings en la terminal: `/kids` con el dialog abierto/cerrado por los 3 caminos, validación, máscara, chips, grilla intacta; `/`, `/kids/1`, `/login` y `/activate-account` siguen igual.
+   4. Comprobar en runtime, sin errores ni warnings en la terminal: `/kids` con el dialog abierto/cerrado por los 3 caminos, validación, máscara, chips, el niño agregado visible en la grilla con contador dinámico; `/`, `/kids/1`, `/login` y `/activate-account` siguen igual.
 
 ## Acceptance criteria
 
@@ -96,7 +97,8 @@ Cada paso deja la app funcionando y verificable.
 - [x] Guardar con nombre vacío muestra borde y mensaje de error bajo NOMBRE COMPLETO y no cierra el dialog.
 - [x] Guardar con fecha incompleta, inexistente (31/02/2025) o futura muestra borde y mensaje bajo FECHA DE NACIMIENTO y no cierra el dialog.
 - [x] Guardar con alergias y notas vacías (opcionales) cierra sin errores.
-- [x] Guardar con todo válido cierra el dialog; la grilla sigue mostrando exactamente los 8 niños de siempre.
+- [x] Guardar con todo válido cierra el dialog sin errores; los 8 niños originales siguen en la grilla.
+- [x] Guardar con todo válido agrega una tarjeta nueva al final de la grilla (nombre recortado, inicial, edad derivada de la fecha, sala elegida, primera alergia en mayúsculas) y el contador del divisor pasa a 9; al refrescar la página vuelve a 8 (sin persistencia).
 - [x] Cancelar, Escape y click en el backdrop cierran el dialog.
 - [x] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: campos vacíos, sala Soles, sin chips, sin errores.
 - [x] Las alergias funcionan como chips: "Maní" + Enter crea el chip, la coma también, la X lo quita; Enter con el input vacío no cierra ni guarda.
@@ -106,7 +108,7 @@ Cada paso deja la app funcionando y verificable.
 ## Decisions
 
 - **Sí:** dialog modal sobre `/kids` en vez de una ruta aparte — la referencia de Penpot es una página suelta, pero el pedido lo define como dialog que salta al clic. _(decisión del usuario, explícita en el pedido)_
-- **Sí:** Guardar solo valida y cierra, sin agregar el niño a la grilla — mocks constantes, sin backend. _(decisión del usuario)_
+- **Sí:** Guardar valida, cierra y agrega el niño a la grilla en memoria (el contador del divisor pasa a dinámico) — mocks constantes, sin backend; se pierde al refrescar. _(cambio de decisión del usuario: el niño debe verse en la lista ya, sin persistencia)_
 - **Sí:** validación con borde rojo + mensaje bajo el campo, Guardar siempre habilitado. _(decisión del usuario)_
 - **Sí:** máscara dd/mm/aaaa + validación de fecha real y no futura al guardar. _(decisión del usuario)_
 - **Sí:** salas hardcode Soles, Lunas, Estrellas. _(decisión del usuario)_
@@ -120,7 +122,8 @@ Cada paso deja la app funcionando y verificable.
 - **Sí:** chips con la paleta del chip de alergia de `KidCard` (`#FBD8CC`/`#D9684A`) — la referencia no dibuja chips (input plano); se reusa la paleta existente por coherencia.
 - **Sí:** reutilizar `auth-canvas`/`auth-line` (valores idénticos `#FBF4EC`/`#EADFD0`) en vez de crear tokens nuevos; resto de colores puntuales inline, patrón SPEC 02/03. `globals.css` queda intacto.
 - **Sí:** errores en `accent` (`#D9583C`) — el proyecto no tiene token de error; el coral es el color de alerta/acción de la paleta.
-- **No:** persistencia, backend ni mutar `kids.ts`/la grilla.
+- **Sí:** la tarjeta del niño nuevo mantiene el `Link` a `/kids/{id}`; esa ruta responde 404 hasta que un futuro spec con backend lo resuelva. _(decisión del usuario)_
+- **No:** persistencia, backend ni mutar `kids.ts` (la grilla solo cambia en el estado de la sesión).
 - **No:** date picker con calendario.
 - **No:** agrupar `/kids` por sala ni mostrar las salas nuevas en la grilla o el divisor.
 - **No:** validación de nombre más allá de no-vacío.
@@ -139,7 +142,7 @@ Cada paso deja la app funcionando y verificable.
 
 ## What is **not** in this spec
 
-- Agregar el niño a la grilla o persistirlo de cualquier forma.
+- Persistir el niño: `kids.ts`, backend o supervivencia a la recarga de la página.
 - Agrupar `/kids` por sala o reflejar las salas nuevas en la grilla.
 - Date picker con calendario.
 - Vincular padres, editar niño y resumen del día.
