@@ -282,9 +282,12 @@ export default function AddKidDialog({ open, onClose }: AddKidDialogProps) {
           setRoomOpen(false);
         }
       }}
-      className="m-auto max-h-[calc(100vh-48px)] w-[calc(100%-32px)] max-w-[520px] overflow-hidden rounded-[24px] border border-line bg-auth-canvas p-0 shadow-[0_20px_50px_-24px_rgba(63,54,46,0.35)] [&::backdrop]:bg-[rgba(63,54,46,0.45)]"
+      className={`fixed inset-0 flex items-center justify-center bg-transparent p-0 [height:100vh] [width:100vw] [&::backdrop]:bg-[rgba(63,54,46,0.45)] ${!open ? "hidden" : ""}`}
     >
-      <form onSubmit={handleSubmit} className="flex max-h-[calc(100vh-48px)] flex-col">
+      <form
+        onSubmit={handleSubmit}
+        className="flex h-[calc(100vh-48px)] w-[calc(100%-32px)] max-w-[520px] flex-col overflow-hidden rounded-[24px] border border-line bg-auth-canvas shadow-[0_20px_50px_-24px_rgba(63,54,46,0.35)]"
+      >
         <div className="flex flex-none items-center justify-between border-b border-line px-[26px] py-5">
           <button
             type="button"

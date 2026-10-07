@@ -1,6 +1,6 @@
 # SPEC 04 — Dialog "Agregar niño" en `/kids`
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 02 (`specs/02-kids-and-kid-profile.md`) — hereda la ruta `/kids` y su botón "Agregar niño", el patrón de mocks por dominio en `app/_data/`, los tokens de `globals.css` y la paleta de chips de `KidCard`; reutiliza los tokens `auth-canvas`/`auth-line` de SPEC 03, cuyos valores coinciden con esta referencia
 > **Date:** 2026-10-07
 > **Objective:** Implementar el dialog modal de alta de niño (`references/pantallas/agregar-nino.dc.html`) que se abre al tocar "Agregar niño" en `/kids`, con nombre completo, fecha de nacimiento con máscara dd/mm/aaaa y sala como obligatorios, alergias en chips y notas médicas como opcionales, validación con errores en línea y cierre sin persistencia.
@@ -82,26 +82,26 @@ Cada paso deja la app funcionando y verificable.
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), `/kids` con el dialog abierto y cerrado no loguea errores ni warnings en la terminal.
-- [ ] Click en "Agregar niño" abre el dialog sobre `/kids` sin cambiar la URL; el fondo queda oscurecido y el scroll de la página bloqueado mientras está abierto.
-- [ ] En desktop, el dialog replica `references/pantallas/agregar-nino.dc.html`: card 520px crema, cabecera Cancelar/"Agregar niño"/Guardar, labels en caps con tracking, inputs blancos radio 14px y placeholders "Ej. Martina López", "dd/mm/aaaa", "Ej. Maní, Lactosa", "Indicaciones, medicación, contactos…".
-- [ ] El foco entra al dialog en NOMBRE COMPLETO y queda atrapado dentro (Tab no sale); al cerrar, el foco vuelve al botón "Agregar niño".
-- [ ] El selector de sala muestra exactamente Soles, Lunas y Estrellas, arranca en Soles y su trigger se ve como la referencia (chevron).
-- [ ] Al tipear no se puede formar un día > 31 ni un mes > 12: esos dígitos se ignoran al escribir (p.ej. "32" en día queda "3", "13" en mes queda "1").
-- [ ] La lista del selector de sala se abre justo debajo del trigger, dentro del dialog y con el ancho del campo SALA; si no cabe debajo se abre hacia arriba. Escape cierra la lista sin cerrar el dialog.
-- [ ] Tipear "31082022" en fecha produce "31/08/2022"; solo se aceptan dígitos, sin pasar de 10 caracteres; Backspace no deja barras colgando.
-- [ ] Guardar con nombre vacío muestra borde y mensaje de error bajo NOMBRE COMPLETO y no cierra el dialog.
-- [ ] Guardar con fecha incompleta, inexistente (31/02/2025) o futura muestra borde y mensaje bajo FECHA DE NACIMIENTO y no cierra el dialog.
-- [ ] Guardar con alergias y notas vacías (opcionales) cierra sin errores.
-- [ ] Guardar con todo válido cierra el dialog; la grilla sigue mostrando exactamente los 8 niños de siempre.
-- [ ] Cancelar, Escape y click en el backdrop cierran el dialog.
-- [ ] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: campos vacíos, sala Soles, sin chips, sin errores.
-- [ ] Las alergias funcionan como chips: "Maní" + Enter crea el chip, la coma también, la X lo quita; Enter con el input vacío no cierra ni guarda.
-- [ ] Sin scroll horizontal desde 360px con el dialog abierto; la card respeta márgenes laterales.
-- [ ] `/`, `/kids/[id]`, `/login` y `/activate-account` siguen funcionando igual.
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), `/kids` con el dialog abierto y cerrado no loguea errores ni warnings en la terminal.
+- [x] Click en "Agregar niño" abre el dialog sobre `/kids` sin cambiar la URL; el fondo queda oscurecido y el scroll de la página bloqueado mientras está abierto.
+- [x] En desktop, el dialog replica `references/pantallas/agregar-nino.dc.html`: card 520px crema, cabecera Cancelar/"Agregar niño"/Guardar, labels en caps con tracking, inputs blancos radio 14px y placeholders "Ej. Martina López", "dd/mm/aaaa", "Ej. Maní, Lactosa", "Indicaciones, medicación, contactos…".
+- [x] El foco entra al dialog en NOMBRE COMPLETO y queda atrapado dentro (Tab no sale); al cerrar, el foco vuelve al botón "Agregar niño".
+- [x] El selector de sala muestra exactamente Soles, Lunas y Estrellas, arranca en Soles y su trigger se ve como la referencia (chevron).
+- [x] Al tipear no se puede formar un día > 31 ni un mes > 12: esos dígitos se ignoran al escribir (p.ej. "32" en día queda "3", "13" en mes queda "1").
+- [x] La lista del selector de sala se abre justo debajo del trigger, dentro del dialog y con el ancho del campo SALA; si no cabe debajo se abre hacia arriba. Escape cierra la lista sin cerrar el dialog.
+- [x] Tipear "31082022" en fecha produce "31/08/2022"; solo se aceptan dígitos, sin pasar de 10 caracteres; Backspace no deja barras colgando.
+- [x] Guardar con nombre vacío muestra borde y mensaje de error bajo NOMBRE COMPLETO y no cierra el dialog.
+- [x] Guardar con fecha incompleta, inexistente (31/02/2025) o futura muestra borde y mensaje bajo FECHA DE NACIMIENTO y no cierra el dialog.
+- [x] Guardar con alergias y notas vacías (opcionales) cierra sin errores.
+- [x] Guardar con todo válido cierra el dialog; la grilla sigue mostrando exactamente los 8 niños de siempre.
+- [x] Cancelar, Escape y click en el backdrop cierran el dialog.
+- [x] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: campos vacíos, sala Soles, sin chips, sin errores.
+- [x] Las alergias funcionan como chips: "Maní" + Enter crea el chip, la coma también, la X lo quita; Enter con el input vacío no cierra ni guarda.
+- [x] Sin scroll horizontal desde 360px con el dialog abierto; la card respeta márgenes laterales.
+- [x] `/`, `/kids/[id]`, `/login` y `/activate-account` siguen funcionando igual.
 
 ## Decisions
 
