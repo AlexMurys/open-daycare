@@ -298,7 +298,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
           setRoomOpen(false);
         }
       }}
-      className={`fixed inset-0 flex items-center justify-center bg-transparent p-0 [height:100vh] [width:100vw] [&::backdrop]:bg-[rgba(63,54,46,0.45)] ${!open ? "hidden" : ""}`}
+      className={`fixed inset-0 flex max-h-none max-w-none items-center justify-center bg-transparent p-0 [height:100vh] [width:100vw] [&::backdrop]:bg-[rgba(63,54,46,0.45)] ${!open ? "hidden" : ""}`}
     >
       <form
         onSubmit={handleSubmit}
