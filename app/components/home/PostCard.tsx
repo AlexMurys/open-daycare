@@ -9,6 +9,10 @@ const CHIP_STYLES: Record<PostType, string> = {
   achievement: "bg-achievement-bg text-achievement",
   activity: "bg-activity-bg text-activity",
   announcement: "bg-announcement-bg text-announcement",
+  meal: "bg-meal-bg text-meal",
+  nap: "bg-nap-bg text-nap",
+  mood: "bg-mood-bg text-mood",
+  photo: "bg-photo-bg text-photo",
 };
 
 interface PostCardProps {

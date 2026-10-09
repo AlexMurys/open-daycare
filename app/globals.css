@@ -37,6 +37,18 @@
   --color-announcement: #4e72c8;
   --color-announcement-bg: #ccd8f4;
 
+  --color-meal: #9a7b1e;
+  --color-meal-bg: #f4dc8e;
+
+  --color-nap: #7b5fc0;
+  --color-nap-bg: #e7dcf6;
+
+  --color-mood: #c56486;
+  --color-mood-bg: #f9d2de;
+
+  --color-photo: #d9684a;
+  --color-photo-bg: #fbd8cc;
+
   --color-placeholder-bg: #f4ece1;
   --color-placeholder-line: #dbcdba;
   --color-placeholder-ink: #b0a290;
