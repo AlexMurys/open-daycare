@@ -6,7 +6,7 @@ export type KidAvatarColor =
   | "violet"
   | "blue";
 
-export type ParentRelation = "Mamá" | "Papá";
+export type ParentRelation = "Mamá" | "Papá" | "Tutor/a";
 
 export type ParentStatus = "active" | "pending";
 
