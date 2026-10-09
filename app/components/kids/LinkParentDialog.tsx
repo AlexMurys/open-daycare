@@ -229,7 +229,7 @@ export default function LinkParentDialog({
           </div>
 
           <div className="mb-5">
-            <span className={LABEL_CLASS}>PARENTESCO</span>
+            <span className="mb-2.5 block text-[12px] font-extrabold tracking-[0.7px] text-ink-faint">PARENTESCO</span>
             <div className="flex gap-2.25">
               {RELATIONS.map((option) => {
                 const active = relation === option;
