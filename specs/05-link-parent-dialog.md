@@ -1,6 +1,6 @@
 # SPEC 05 — Dialog "Vincular padre" en `/kids/[id]`
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 02 (`specs/02-kids-and-kid-profile.md`) — hereda la ruta `/kids/[id]`, la tarjeta PADRES VINCULADOS (`ParentsCard.tsx`) con su botón inerte "Vincular otro padre", el mock `app/_data/kids.ts` y los tokens de `globals.css`; SPEC 04 (`specs/04-add-kid-dialog.md`) — reusa el patrón de dialog modal (`<dialog>` + `showModal()`, backdrop translúcido, focus trap, cierre por Escape/backdrop, errores en línea) y la decisión de alta en memoria sin persistencia
 > **Date:** 2026-10-08
 > **Objective:** Implementar el dialog modal de vinculación de padre (`references/pantallas/vincular-padre.dc.html`) que se abre al tocar "Vincular otro padre" en el perfil del niño, con nombre, email y parentesco obligatorios con errores en línea, código de invitación estático y alta del padre como pendiente en memoria.
@@ -79,23 +79,23 @@ Cada paso deja la app funcionando y verificable.
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), `/kids/1` con el dialog abierto y cerrado no loguea errores ni warnings en la terminal.
-- [ ] Click en "Vincular otro padre" abre el dialog sobre `/kids/1` sin cambiar la URL; el fondo queda oscurecido y el scroll de la página bloqueado mientras está abierto.
-- [ ] En desktop, el dialog replica `references/pantallas/vincular-padre.dc.html`: card 480px crema, título "Vincular padre" + subtítulo "a Mateo Fernández", X arriba a la derecha, banner azul "Le enviaremos un correo… Solo verá el feed de Mateo.", inputs con placeholders "Ej. Diego Fernández" y "correo@ejemplo.com", pills Mamá/Papá/Tutor/a, caja "7K4P9"/"Vence en 7 días" y botón coral "Enviar invitación" con icono.
-- [ ] En `/kids/2` el subtítulo dice "a Sofía Méndez" y el banner "Solo verá el feed de Sofía." (textos dependientes del niño).
-- [ ] Las pills arrancan sin ninguna elegida; click en una la marca con el estilo activo y solo una queda activa a la vez.
-- [ ] El foco entra al dialog en NOMBRE DEL PADRE/MADRE y queda atrapado dentro (Tab no sale); al cerrar, el foco vuelve al botón "Vincular otro padre".
-- [ ] Enviar con nombre vacío muestra borde y mensaje de error bajo NOMBRE DEL PADRE/MADRE y no cierra el dialog.
-- [ ] Enviar con email vacío o mal formado (p.ej. "correo@") muestra borde y mensaje bajo EMAIL y no cierra el dialog.
-- [ ] Enviar sin parentesco elegido muestra mensaje bajo PARENTESCO y no cierra el dialog.
-- [ ] Enviar con todo válido cierra el dialog; el padre aparece al final de PADRES VINCULADOS con su inicial, "{parentesco} · invitación enviada" y chip PENDIENTE; al refrescar la lista vuelve a la de `kids.ts`.
-- [ ] La X, Escape y click en el backdrop cierran el dialog.
-- [ ] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: campos vacíos, sin parentesco, sin errores.
-- [ ] Sin scroll horizontal desde 360px con el dialog abierto; la card respeta márgenes laterales.
-- [ ] `/`, `/kids`, `/login` y `/activate-account` siguen funcionando igual.
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), `/kids/1` con el dialog abierto y cerrado no loguea errores ni warnings en la terminal.
+- [x] Click en "Vincular otro padre" abre el dialog sobre `/kids/1` sin cambiar la URL; el fondo queda oscurecido y el scroll de la página bloqueado mientras está abierto.
+- [x] En desktop, el dialog replica `references/pantallas/vincular-padre.dc.html`: card 480px crema, título "Vincular padre" + subtítulo "a Mateo Fernández", X arriba a la derecha, banner azul "Le enviaremos un correo… Solo verá el feed de Mateo.", inputs con placeholders "Ej. Diego Fernández" y "correo@ejemplo.com", pills Mamá/Papá/Tutor/a, caja "7K4P9"/"Vence en 7 días" y botón coral "Enviar invitación" con icono.
+- [x] En `/kids/2` el subtítulo dice "a Sofía Méndez" y el banner "Solo verá el feed de Sofía." (textos dependientes del niño).
+- [x] Las pills arrancan sin ninguna elegida; click en una la marca con el estilo activo y solo una queda activa a la vez.
+- [x] El foco entra al dialog en NOMBRE DEL PADRE/MADRE y queda atrapado dentro (Tab no sale); al cerrar, el foco vuelve al botón "Vincular otro padre".
+- [x] Enviar con nombre vacío muestra borde y mensaje de error bajo NOMBRE DEL PADRE/MADRE y no cierra el dialog.
+- [x] Enviar con email vacío o mal formado (p.ej. "correo@") muestra borde y mensaje bajo EMAIL y no cierra el dialog.
+- [x] Enviar sin parentesco elegido muestra mensaje bajo PARENTESCO y no cierra el dialog.
+- [x] Enviar con todo válido cierra el dialog; el padre aparece al final de PADRES VINCULADOS con su inicial, "{parentesco} · invitación enviada" y chip PENDIENTE; al refrescar la lista vuelve a la de `kids.ts`.
+- [x] La X, Escape y click en el backdrop cierran el dialog.
+- [x] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: campos vacíos, sin parentesco, sin errores.
+- [x] Sin scroll horizontal desde 360px con el dialog abierto; la card respeta márgenes laterales.
+- [x] `/`, `/kids`, `/login` y `/activate-account` siguen funcionando igual.
 
 ## Decisions
 
