@@ -1,4 +1,11 @@
-export type PostType = "achievement" | "activity" | "announcement";
+export type PostType =
+  | "achievement"
+  | "activity"
+  | "announcement"
+  | "meal"
+  | "nap"
+  | "mood"
+  | "photo";
 
 export type NavIcon = "home" | "kids" | "bell" | "user";
 
@@ -37,6 +44,10 @@ export const POST_TYPE_LABEL: Record<PostType, string> = {
   achievement: "LOGRO",
   activity: "ACTIVIDAD",
   announcement: "ANUNCIO",
+  meal: "COMIDA",
+  nap: "SIESTA",
+  mood: "ÁNIMO",
+  photo: "FOTO",
 };
 
 export const staff: SidebarUser = {
