@@ -1,17 +1,24 @@
-import Link from "next/link";
+"use client";
+
 import { staff } from "@/app/_data/mock";
+import { useCompose } from "@/app/components/compose/ComposeProvider";
 
 export default function ShareBox() {
+  const { openCompose } = useCompose();
+
   return (
-    <Link
-      href="#"
-      className="mb-6 flex w-full items-center gap-[14px] rounded-[18px] border border-line bg-surface px-[18px] py-[14px] shadow-[0_4px_14px_-10px_rgba(120,90,60,0.4)]"
+    <button
+      type="button"
+      onClick={openCompose}
+      className="mb-6 flex w-full cursor-pointer items-center gap-3.5 rounded-[18px] border border-line bg-surface px-4.5 py-3.5 text-left shadow-[0_4px_14px_-10px_rgba(120,90,60,0.4)]"
     >
       <span className="flex size-10 flex-none items-center justify-center rounded-full bg-accent-pale font-display text-[16px] font-semibold text-white">
         {staff.initial}
       </span>
-      <span className="flex-1 text-[15px] text-ink-ghost">Compartí un momento…</span>
-      <span className="flex size-[38px] flex-none items-center justify-center rounded-xl bg-accent-wash text-accent-soft">
+      <span className="flex-1 text-[15px] text-ink-ghost">
+        Compartí un momento…
+      </span>
+      <span className="flex size-9.5 flex-none items-center justify-center rounded-xl bg-accent-wash text-accent-soft">
         <svg
           width="19"
           height="19"
@@ -26,6 +33,6 @@ export default function ShareBox() {
           <circle cx="12" cy="13" r="4" />
         </svg>
       </span>
-    </Link>
+    </button>
   );
 }

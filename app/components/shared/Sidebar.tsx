@@ -10,6 +10,7 @@ import {
   staff,
   type NavIcon,
 } from "@/app/_data/mock";
+import { useCompose } from "@/app/components/compose/ComposeProvider";
 
 const NAV_ICONS: Record<NavIcon, ReactNode> = {
   home: (
@@ -84,11 +85,12 @@ function isNavRouteActive(href: string, pathname: string): boolean {
 
 export default function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
+  const { openCompose } = useCompose();
 
   return (
-    <aside className="flex h-full w-[248px] shrink-0 flex-col border-r border-line bg-surface px-4 py-6">
-      <Link href="/" className="flex items-center gap-[11px] px-2 pb-[22px] pt-1">
-        <span className="flex size-[38px] flex-none items-center justify-center rounded-xl bg-linear-[155deg] from-accent-mist to-accent-pale">
+    <aside className="flex h-full w-62 shrink-0 flex-col border-r border-line bg-surface px-4 py-6">
+      <Link href="/" className="flex items-center gap-2.75 px-2 pb-5.5 pt-1">
+        <span className="flex size-9.5 flex-none items-center justify-center rounded-xl bg-linear-[155deg] from-accent-mist to-accent-pale">
           <svg
             width="21"
             height="21"
@@ -108,15 +110,18 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             OpenDayCare
           </span>
           <span className="mt-0.5 block text-[11.5px] text-ink-ghost">
-          {classroom.name}
+            {classroom.name}
+          </span>
         </span>
-      </span>
       </Link>
 
-      <Link
-        href="#"
-        onClick={onNavigate}
-        className="mb-[18px] flex w-full items-center justify-center gap-2 rounded-[14px] bg-linear-to-b from-accent-mid to-[#ee8164] py-3 font-extrabold text-[14.5px] text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
+      <button
+        type="button"
+        onClick={() => {
+          onNavigate?.();
+          openCompose();
+        }}
+        className="mb-4.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-linear-to-b from-accent-mid to-[#ee8164] py-3 font-extrabold text-[14.5px] text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
       >
         <svg
           width="17"
@@ -131,7 +136,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
           <path d="M12 5v14M5 12h14" />
         </svg>
         Nueva publicación
-      </Link>
+      </button>
 
       <nav className="flex flex-1 flex-col gap-1">
         {navItems.map((item) => {
@@ -171,16 +176,18 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
         })}
       </nav>
 
-      <div className="mt-[10px] border-t border-line pt-[14px]">
-        <div className="flex items-center gap-[11px] px-2 py-1.5">
-          <span className="flex size-[38px] flex-none items-center justify-center rounded-full bg-accent-pale font-display text-[16px] font-semibold text-white">
+      <div className="mt-2.5 border-t border-line pt-3.5">
+        <div className="flex items-center gap-2.75 px-2 py-1.5">
+          <span className="flex size-9.5 flex-none items-center justify-center rounded-full bg-accent-pale font-display text-[16px] font-semibold text-white">
             {staff.initial}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[14px] font-extrabold text-ink">
               {staff.name}
             </span>
-            <span className="block text-[12px] text-ink-ghost">{staff.role}</span>
+            <span className="block text-[12px] text-ink-ghost">
+              {staff.role}
+            </span>
           </span>
           <button
             type="button"
