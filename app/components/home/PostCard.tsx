@@ -4,6 +4,8 @@ import {
   type FeedPost,
   type PostType,
 } from "@/app/_data/mock";
+import { kids } from "@/app/_data/kids";
+import { AVATAR_COLORS } from "@/app/components/kids/avatarColors";
 
 const CHIP_STYLES: Record<PostType, string> = {
   achievement: "bg-achievement-bg text-achievement",
@@ -39,6 +41,25 @@ export default function PostCard({ post }: PostCardProps) {
             >
               <path d="m3 11 18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6" />
             </svg>
+          </span>
+        ) : post.kidIds?.length ? (
+          <span className="flex size-11 flex-none items-center">
+            {kids
+              .filter((kid) => post.kidIds!.includes(kid.id))
+              .map((kid, index) => {
+                const colors = AVATAR_COLORS[kid.avatarColor];
+                return (
+                  <span
+                    key={kid.id}
+                    className={`flex size-7 flex-none items-center justify-center rounded-full font-display text-[12px] font-semibold ring-2 ring-surface ${
+                      index > 0 ? "-ml-2.5" : ""
+                    }`}
+                    style={{ background: colors.bg, color: colors.fg }}
+                  >
+                    {kid.initial}
+                  </span>
+                );
+              })}
           </span>
         ) : (
           <span className="flex size-11 flex-none items-center justify-center rounded-full bg-activity-avatar font-display text-[17px] font-semibold text-activity-deep">

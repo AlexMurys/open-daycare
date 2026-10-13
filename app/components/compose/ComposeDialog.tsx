@@ -74,6 +74,11 @@ function formatTime(date: Date): string {
   return `${hours}:${minutes}`;
 }
 
+function joinNames(names: string[]): string {
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
+}
+
 export default function ComposeDialog({
   open,
   triggerRef,
@@ -84,7 +89,7 @@ export default function ComposeDialog({
   const firstParaRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
 
-  const [para, setPara] = useState<number | "room" | null>(null);
+  const [para, setPara] = useState<number[] | "room" | null>(null);
   const [type, setType] = useState<PostType | null>(null);
   const [text, setText] = useState("");
   const [paraError, setParaError] = useState<string | null>(null);
@@ -140,15 +145,31 @@ export default function ComposeDialog({
   }
 
   function buildPost(): FeedPost {
-    const kid = typeof para === "number" ? kids.find((k) => k.id === para) : undefined;
-    const firstName = kid ? kid.name.split(" ")[0] : undefined;
+    if (para === "room" || !Array.isArray(para)) {
+      return {
+        id: crypto.randomUUID(),
+        type: type!,
+        author: "Anuncio general",
+        time: formatTime(new Date()),
+        audience: "toda la sala",
+        text: text.trim(),
+        likes: 0,
+        comments: 0,
+      };
+    }
+    const selected = kids.filter((kid) => para.includes(kid.id));
+    const names = selected.map((kid) => kid.name.split(" ")[0]);
+    const isGroup = selected.length > 1;
     return {
       id: crypto.randomUUID(),
       type: type!,
-      author: kid ? firstName! : "Anuncio general",
-      initial: kid ? kid.initial : undefined,
+      author: isGroup ? joinNames(names) : names[0],
+      initial: isGroup ? undefined : selected[0].initial,
+      kidIds: isGroup ? selected.map((kid) => kid.id) : undefined,
       time: formatTime(new Date()),
-      audience: kid ? `familia de ${firstName}` : "toda la sala",
+      audience: isGroup
+        ? `familias de ${joinNames(names)}`
+        : `familia de ${names[0]}`,
       text: text.trim(),
       likes: 0,
       comments: 0,
@@ -157,7 +178,9 @@ export default function ComposeDialog({
 
   function validateAndPublish() {
     const nextParaError =
-      para === null ? "Elegí para quién es la publicación." : null;
+      para === null || (Array.isArray(para) && para.length === 0)
+        ? "Elegí para quién es la publicación."
+        : null;
     const nextTypeError = type === null ? "Elegí el tipo de publicación." : null;
     const nextTextError = text.trim() ? null : "Escribí una descripción.";
     setParaError(nextParaError);
@@ -215,7 +238,7 @@ export default function ComposeDialog({
             <div className={LABEL_CLASS}>PARA</div>
             <div className="flex flex-wrap gap-2.25">
               {kids.map((kid, index) => {
-                const selected = para === kid.id;
+                const selected = Array.isArray(para) && para.includes(kid.id);
                 const colors = AVATAR_COLORS[kid.avatarColor];
                 return (
                   <button
@@ -224,7 +247,12 @@ export default function ComposeDialog({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => {
-                      setPara(kid.id);
+                      setPara((prev) => {
+                        const current = Array.isArray(prev) ? prev : [];
+                        return current.includes(kid.id)
+                          ? current.filter((id) => id !== kid.id)
+                          : [...current, kid.id];
+                      });
                       if (paraError) setParaError(null);
                     }}
                     className={`flex cursor-pointer items-center gap-2 rounded-full border-[1.5px] py-1.5 pr-3.5 pl-1.5 text-[14px] font-bold transition-colors ${
@@ -247,7 +275,7 @@ export default function ComposeDialog({
                 type="button"
                 aria-pressed={para === "room"}
                 onClick={() => {
-                  setPara("room");
+                  setPara((prev) => (prev === "room" ? null : "room"));
                   if (paraError) setParaError(null);
                 }}
                 className={`cursor-pointer rounded-full border-[1.5px] px-4 py-1.5 text-[14px] font-bold transition-colors ${
