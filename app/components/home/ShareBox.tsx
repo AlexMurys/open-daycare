@@ -9,7 +9,7 @@ export default function ShareBox() {
   return (
     <button
       type="button"
-      onClick={openCompose}
+      onClick={(event) => openCompose(event.currentTarget)}
       className="mb-6 flex w-full cursor-pointer items-center gap-3.5 rounded-[18px] border border-line bg-surface px-4.5 py-3.5 text-left shadow-[0_4px_14px_-10px_rgba(120,90,60,0.4)]"
     >
       <span className="flex size-10 flex-none items-center justify-center rounded-full bg-accent-pale font-display text-[16px] font-semibold text-white">

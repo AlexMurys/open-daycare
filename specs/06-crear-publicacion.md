@@ -1,6 +1,6 @@
 # SPEC 06 — Dialog "Nueva publicación" (composer del feed)
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 01 (`specs/01-home-feed.md`) — hereda la ruta `/`, el sidebar con el botón "Nueva publicación", la caja `ShareBox`, `PostCard` con sus chips por tipo, los mocks de `app/_data/mock.ts` y los tokens de `globals.css`; SPEC 02 (`specs/02-kids-and-kid-profile.md`) — reusa `app/_data/kids.ts` y `AVATAR_COLORS` para las pills de PARA; SPEC 04/05 (`specs/04-add-kid-dialog.md`, `specs/05-link-parent-dialog.md`) — reusa el patrón de dialog modal (`<dialog>` + `showModal()`, backdrop translúcido, focus trap, cierre por Escape/backdrop, errores en línea) y la decisión de alta en memoria sin persistencia
 > **Date:** 2026-10-09
 > **Objective:** Implementar el dialog modal de nueva publicación (`references/pantallas/crear-publicacion.dc.html`) que se abre desde el botón del sidebar, el drawer móvil y la caja "Compartí un momento…" del feed, con PARA (un niño o Toda la sala), TIPO y descripción obligatorios con errores en línea, fotos inertes y alta del post al tope del feed en memoria.
@@ -126,26 +126,26 @@ Cada paso deja la app funcionando y verificable.
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), el dialog abierto y cerrado no loguea errores ni warnings en la terminal.
-- [ ] Click en "Nueva publicación" del sidebar abre el dialog sobre la página actual (`/`, `/kids` y `/kids/[id]`) sin cambiar la URL; el fondo queda oscurecido y el scroll bloqueado mientras está abierto.
-- [ ] Click en "Nueva publicación" del drawer móvil cierra el drawer y abre el mismo dialog; click en "Compartí un momento…" en `/` también lo abre.
-- [ ] En desktop, el dialog replica `references/pantallas/crear-publicacion.dc.html`: card 580px crema, cabecera Cancelar/"Nueva publicación"/Publicar, pills de PARA con avatars circulares, 7 pills de TIPO, textarea con placeholder "Contá cómo le fue hoy…" y los 2 tiles de FOTOS.
-- [ ] PARA muestra los 8 niños de `kids.ts` + "Toda la sala"; arranca sin selección; solo una pill queda activa a la vez y "Toda la sala" desmarca al niño activo; la activa toma fondo `#3F362E` con texto blanco.
-- [ ] TIPO arranca sin selección; la elegida se vuelve sólida con su color y texto blanco y las demás quedan claras.
-- [ ] Publicar sin PARA muestra mensaje de error bajo PARA y no cierra el dialog.
-- [ ] Publicar sin TIPO muestra mensaje de error bajo TIPO y no cierra el dialog.
-- [ ] Publicar con la descripción vacía (o solo espacios) muestra borde y mensaje bajo DESCRIPCIÓN y no cierra el dialog.
-- [ ] Publicar con todo válido cierra el dialog y lleva a `/`, donde el post nuevo aparece al tope del feed con el chip de su tipo, autor e inicial según PARA (o "Anuncio general" con Toda la sala), "Para: familia de {nombre}"/"toda la sala", hora HH:MM actual y 0 likes/0 comentarios.
-- [ ] Al refrescar `/` vuelven exactamente los 3 posts de `mock.ts` (sin persistencia).
-- [ ] Cancelar, Escape y click en el backdrop cierran el dialog sin cambios en la página.
-- [ ] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: sin PARA, sin TIPO, textarea vacía, sin errores.
-- [ ] El foco entra al dialog en la primera pill de PARA y queda atrapado dentro; al cerrar, el foco vuelve al trigger (o al botón "Abrir menú" si el trigger fue el drawer móvil).
-- [ ] Los tiles de FOTOS son inertes: "Agregar" no navega ni cambia nada.
-- [ ] Sin scroll horizontal desde 360px con el dialog abierto; la card respeta márgenes laterales.
-- [ ] `/`, `/kids`, `/kids/[id]`, `/login` y `/activate-account` siguen funcionando igual.
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] Con el dev server relanzado limpio (PID de `.next/dev/lock` matado antes), el dialog abierto y cerrado no loguea errores ni warnings en la terminal.
+- [x] Click en "Nueva publicación" del sidebar abre el dialog sobre la página actual (`/`, `/kids` y `/kids/[id]`) sin cambiar la URL; el fondo queda oscurecido y el scroll bloqueado mientras está abierto.
+- [x] Click en "Nueva publicación" del drawer móvil cierra el drawer y abre el mismo dialog; click en "Compartí un momento…" en `/` también lo abre.
+- [x] En desktop, el dialog replica `references/pantallas/crear-publicacion.dc.html`: card 580px crema, cabecera Cancelar/"Nueva publicación"/Publicar, pills de PARA con avatars circulares, 7 pills de TIPO, textarea con placeholder "Contá cómo le fue hoy…" y los 2 tiles de FOTOS.
+- [x] PARA muestra los 8 niños de `kids.ts` + "Toda la sala"; arranca sin selección; solo una pill queda activa a la vez y "Toda la sala" desmarca al niño activo; la activa toma fondo `#3F362E` con texto blanco.
+- [x] TIPO arranca sin selección; la elegida se vuelve sólida con su color y texto blanco y las demás quedan claras.
+- [x] Publicar sin PARA muestra mensaje de error bajo PARA y no cierra el dialog.
+- [x] Publicar sin TIPO muestra mensaje de error bajo TIPO y no cierra el dialog.
+- [x] Publicar con la descripción vacía (o solo espacios) muestra borde y mensaje bajo DESCRIPCIÓN y no cierra el dialog.
+- [x] Publicar con todo válido cierra el dialog y lleva a `/`, donde el post nuevo aparece al tope del feed con el chip de su tipo, autor e inicial según PARA (o "Anuncio general" con Toda la sala), "Para: familia de {nombre}"/"toda la sala", hora HH:MM actual y 0 likes/0 comentarios.
+- [x] Al refrescar `/` vuelven exactamente los 3 posts de `mock.ts` (sin persistencia).
+- [x] Cancelar, Escape y click en el backdrop cierran el dialog sin cambios en la página.
+- [x] Reabrir el dialog tras cerrarlo lo muestra en estado inicial: sin PARA, sin TIPO, textarea vacía, sin errores.
+- [x] El foco entra al dialog en la primera pill de PARA y queda atrapado dentro; al cerrar, el foco vuelve al trigger (o al botón "Abrir menú" si el trigger fue el drawer móvil).
+- [x] Los tiles de FOTOS son inertes: "Agregar" no navega ni cambia nada.
+- [x] Sin scroll horizontal desde 360px con el dialog abierto; la card respeta márgenes laterales.
+- [x] `/`, `/kids`, `/kids/[id]`, `/login` y `/activate-account` siguen funcionando igual.
 
 ## Decisions
 

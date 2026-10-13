@@ -117,9 +117,9 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
 
       <button
         type="button"
-        onClick={() => {
+        onClick={(event) => {
           onNavigate?.();
-          openCompose();
+          openCompose(event.currentTarget);
         }}
         className="mb-4.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] bg-linear-to-b from-accent-mid to-[#ee8164] py-3 font-extrabold text-[14.5px] text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,0.75)]"
       >

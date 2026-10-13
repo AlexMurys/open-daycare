@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { FeedPost } from "@/app/_data/mock";
 import ComposeDialog from "./ComposeDialog";
 
 type ComposeContextValue = {
   sessionPosts: FeedPost[];
-  openCompose: () => void;
+  openCompose: (trigger?: HTMLElement | null) => void;
   addPost: (post: FeedPost) => void;
 };
 
@@ -25,8 +25,10 @@ export default function ComposeProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [sessionPosts, setSessionPosts] = useState<FeedPost[]>([]);
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
-  function openCompose() {
+  function openCompose(trigger?: HTMLElement | null) {
+    triggerRef.current = trigger ?? null;
     setOpen(true);
   }
 
@@ -45,6 +47,7 @@ export default function ComposeProvider({ children }: { children: ReactNode }) {
       {children}
       <ComposeDialog
         open={open}
+        triggerRef={triggerRef}
         onClose={() => setOpen(false)}
         onPublish={handlePublish}
       />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { kids } from "@/app/_data/kids";
 import type { FeedPost, PostType } from "@/app/_data/mock";
 import { AVATAR_COLORS } from "@/app/components/kids/avatarColors";
@@ -63,6 +63,7 @@ const TYPE_OPTIONS: TypeOption[] = [
 
 type ComposeDialogProps = {
   open: boolean;
+  triggerRef: RefObject<HTMLElement | null>;
   onClose: () => void;
   onPublish: (post: FeedPost) => void;
 };
@@ -75,10 +76,13 @@ function formatTime(date: Date): string {
 
 export default function ComposeDialog({
   open,
+  triggerRef,
   onClose,
   onPublish,
 }: ComposeDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const firstParaRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
 
   const [para, setPara] = useState<number | "room" | null>(null);
   const [type, setType] = useState<PostType | null>(null);
@@ -100,11 +104,23 @@ export default function ComposeDialog({
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open) {
+      wasOpenRef.current = true;
       if (!dialog.open) dialog.showModal();
-    } else if (dialog.open) {
-      dialog.close();
+      requestAnimationFrame(() => firstParaRef.current?.focus());
+      return;
     }
-  }, [open]);
+    if (!wasOpenRef.current) return;
+    wasOpenRef.current = false;
+    if (dialog.open) dialog.close();
+    const trigger = triggerRef.current;
+    if (trigger?.isConnected) {
+      trigger.focus();
+    } else {
+      document
+        .querySelector<HTMLButtonElement>("[data-mobile-menu-trigger]")
+        ?.focus();
+    }
+  }, [open, triggerRef]);
 
   useEffect(() => {
     if (!open) return;
@@ -198,12 +214,13 @@ export default function ComposeDialog({
           <div className="mb-5.5">
             <div className={LABEL_CLASS}>PARA</div>
             <div className="flex flex-wrap gap-2.25">
-              {kids.map((kid) => {
+              {kids.map((kid, index) => {
                 const selected = para === kid.id;
                 const colors = AVATAR_COLORS[kid.avatarColor];
                 return (
                   <button
                     key={kid.id}
+                    ref={index === 0 ? firstParaRef : undefined}
                     type="button"
                     aria-pressed={selected}
                     onClick={() => {
