@@ -7,6 +7,7 @@ import { AVATAR_COLORS } from "@/app/components/kids/avatarColors";
 
 const LABEL_CLASS =
   "mb-2.5 block text-[12px] font-extrabold tracking-[0.7px] text-ink-faint";
+const ERROR_CLASS = "mt-1.5 block text-[13px] font-bold text-accent";
 
 type TypeOption = {
   type: PostType;
@@ -66,12 +67,34 @@ type ComposeDialogProps = {
   onPublish: (post: FeedPost) => void;
 };
 
-export default function ComposeDialog({ open, onClose }: ComposeDialogProps) {
+function formatTime(date: Date): string {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+export default function ComposeDialog({
+  open,
+  onClose,
+  onPublish,
+}: ComposeDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [para, setPara] = useState<number | "room" | null>(null);
   const [type, setType] = useState<PostType | null>(null);
   const [text, setText] = useState("");
+  const [paraError, setParaError] = useState<string | null>(null);
+  const [typeError, setTypeError] = useState<string | null>(null);
+  const [textError, setTextError] = useState<string | null>(null);
+
+  function resetForm() {
+    setPara(null);
+    setType(null);
+    setText("");
+    setParaError(null);
+    setTypeError(null);
+    setTextError(null);
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -92,6 +115,7 @@ export default function ComposeDialog({ open, onClose }: ComposeDialogProps) {
   }, [open]);
 
   function handleClose() {
+    resetForm();
     onClose();
   }
 
@@ -99,8 +123,44 @@ export default function ComposeDialog({ open, onClose }: ComposeDialogProps) {
     if (event.target === dialogRef.current) handleClose();
   }
 
+  function buildPost(): FeedPost {
+    const kid = typeof para === "number" ? kids.find((k) => k.id === para) : undefined;
+    const firstName = kid ? kid.name.split(" ")[0] : undefined;
+    return {
+      id: crypto.randomUUID(),
+      type: type!,
+      author: kid ? firstName! : "Anuncio general",
+      initial: kid ? kid.initial : undefined,
+      time: formatTime(new Date()),
+      audience: kid ? `familia de ${firstName}` : "toda la sala",
+      text: text.trim(),
+      likes: 0,
+      comments: 0,
+    };
+  }
+
+  function validateAndPublish() {
+    const nextParaError =
+      para === null ? "Elegí para quién es la publicación." : null;
+    const nextTypeError = type === null ? "Elegí el tipo de publicación." : null;
+    const nextTextError = text.trim() ? null : "Escribí una descripción.";
+    setParaError(nextParaError);
+    setTypeError(nextTypeError);
+    setTextError(nextTextError);
+    if (nextParaError || nextTypeError || nextTextError) return;
+    onPublish(buildPost());
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    validateAndPublish();
+  }
+
+  function handleTextKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      validateAndPublish();
+    }
   }
 
   return (
@@ -135,77 +195,102 @@ export default function ComposeDialog({ open, onClose }: ComposeDialogProps) {
         </div>
 
         <div className="overflow-y-auto px-6.5 py-6">
-          <div className={LABEL_CLASS}>PARA</div>
-          <div className="mb-5.5 flex flex-wrap gap-2.25">
-            {kids.map((kid) => {
-              const selected = para === kid.id;
-              const colors = AVATAR_COLORS[kid.avatarColor];
-              return (
-                <button
-                  key={kid.id}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => setPara(kid.id)}
-                  className={`flex cursor-pointer items-center gap-2 rounded-full border-[1.5px] py-1.5 pr-3.5 pl-1.5 text-[14px] font-bold transition-colors ${
-                    selected
-                      ? "border-ink bg-ink text-white"
-                      : "border-line bg-surface text-ink-muted"
-                  }`}
-                >
-                  <span
-                    className="flex size-6.5 flex-none items-center justify-center rounded-full font-display text-[13px] font-semibold"
-                    style={{ background: colors.bg, color: colors.fg }}
+          <div className="mb-5.5">
+            <div className={LABEL_CLASS}>PARA</div>
+            <div className="flex flex-wrap gap-2.25">
+              {kids.map((kid) => {
+                const selected = para === kid.id;
+                const colors = AVATAR_COLORS[kid.avatarColor];
+                return (
+                  <button
+                    key={kid.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setPara(kid.id);
+                      if (paraError) setParaError(null);
+                    }}
+                    className={`flex cursor-pointer items-center gap-2 rounded-full border-[1.5px] py-1.5 pr-3.5 pl-1.5 text-[14px] font-bold transition-colors ${
+                      selected
+                        ? "border-ink bg-ink text-white"
+                        : "border-line bg-surface text-ink-muted"
+                    }`}
                   >
-                    {kid.initial}
-                  </span>
-                  {kid.name.split(" ")[0]}
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              aria-pressed={para === "room"}
-              onClick={() => setPara("room")}
-              className={`cursor-pointer rounded-full border-[1.5px] px-4 py-1.5 text-[14px] font-bold transition-colors ${
-                para === "room"
-                  ? "border-ink bg-ink text-white"
-                  : "border-line bg-surface text-ink-muted"
+                    <span
+                      className="flex size-6.5 flex-none items-center justify-center rounded-full font-display text-[13px] font-semibold"
+                      style={{ background: colors.bg, color: colors.fg }}
+                    >
+                      {kid.initial}
+                    </span>
+                    {kid.name.split(" ")[0]}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                aria-pressed={para === "room"}
+                onClick={() => {
+                  setPara("room");
+                  if (paraError) setParaError(null);
+                }}
+                className={`cursor-pointer rounded-full border-[1.5px] px-4 py-1.5 text-[14px] font-bold transition-colors ${
+                  para === "room"
+                    ? "border-ink bg-ink text-white"
+                    : "border-line bg-surface text-ink-muted"
+                }`}
+              >
+                Toda la sala
+              </button>
+            </div>
+            {paraError && <p className={ERROR_CLASS}>{paraError}</p>}
+          </div>
+
+          <div className="mb-5.5">
+            <div className={LABEL_CLASS}>TIPO</div>
+            <div className="flex flex-wrap gap-2.25">
+              {TYPE_OPTIONS.map((option) => {
+                const selected = type === option.type;
+                return (
+                  <button
+                    key={option.type}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setType(option.type);
+                      if (typeError) setTypeError(null);
+                    }}
+                    className={`cursor-pointer rounded-full border-none px-4 py-2 text-[13.5px] font-extrabold transition-colors ${
+                      selected ? option.solid : option.light
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+            {typeError && <p className={ERROR_CLASS}>{typeError}</p>}
+          </div>
+
+          <div className="mb-5.5">
+            <label htmlFor="compose-description" className={LABEL_CLASS}>
+              DESCRIPCIÓN
+            </label>
+            <textarea
+              id="compose-description"
+              placeholder="Contá cómo le fue hoy…"
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+                if (textError) setTextError(null);
+              }}
+              onKeyDown={handleTextKeyDown}
+              aria-invalid={textError ? true : undefined}
+              className={`min-h-30 w-full resize-y rounded-[14px] border-[1.5px] bg-white px-4 py-3.5 text-[15px] leading-normal text-ink placeholder:text-[#b6a99b] focus:outline-none ${
+                textError ? "border-accent" : "border-auth-line"
               }`}
-            >
-              Toda la sala
-            </button>
+            />
+            {textError && <p className={ERROR_CLASS}>{textError}</p>}
           </div>
-
-          <div className={LABEL_CLASS}>TIPO</div>
-          <div className="mb-5.5 flex flex-wrap gap-2.25">
-            {TYPE_OPTIONS.map((option) => {
-              const selected = type === option.type;
-              return (
-                <button
-                  key={option.type}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => setType(option.type)}
-                  className={`cursor-pointer rounded-full border-none px-4 py-2 text-[13.5px] font-extrabold transition-colors ${
-                    selected ? option.solid : option.light
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <label htmlFor="compose-description" className={LABEL_CLASS}>
-            DESCRIPCIÓN
-          </label>
-          <textarea
-            id="compose-description"
-            placeholder="Contá cómo le fue hoy…"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            className="mb-5.5 min-h-30 w-full resize-y rounded-[14px] border-[1.5px] border-auth-line bg-white px-4 py-3.5 text-[15px] leading-normal text-ink placeholder:text-[#b6a99b] focus:outline-none"
-          />
 
           <div className={LABEL_CLASS}>FOTOS</div>
           <div className="flex gap-3">
