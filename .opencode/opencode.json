@@ -1,9 +1,16 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
   "command": {
     "spec": {
       "description": "Crea especificaciones de pantallas y funcionalidades",
       "template": "Carga y sigue la skill spec en .agents/skills/spec/SKILL.md.\n\nFeature: $ARGUMENTS"
+    }
+  },
+  "references": {
+    "docs": {
+      "path": "../07-DB-Schema",
+      "description": "Schema de base de datos, tablas, columnas y referencias a crear, esto no está implementado en la base de datos, solo es para referencia."
     }
   },
   "mcp": {
@@ -12,6 +19,11 @@
       "command": ["npx", "-y", "@playwright/mcp@latest"],
       "enabled": true,
       "timeout": 60000
+    },
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=fgkqezadaybebsmyfpjt&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching",
+      "enabled": true
     }
   }
 }
