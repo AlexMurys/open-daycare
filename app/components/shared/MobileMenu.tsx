@@ -29,6 +29,7 @@ export default function MobileMenu() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
+        data-mobile-menu-trigger
         aria-expanded={isOpen}
         aria-controls="mobile-menu"
         aria-label="Abrir menú"
