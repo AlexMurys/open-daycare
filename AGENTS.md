@@ -66,6 +66,18 @@ Fix si quieres dejar `pnpm lint` usable: añadir `references/**` al array `globa
 - **No edites ni borres** los `.dc.html` ni `support.js` (vendor). Son solo referencia.
 - Estas referencias son de **Julio**, create-next-app es de **Octubre**. Solo `feed` está implementada (spec 01, route group `app/(daycare)/`); las otras 15 pantallas siguen pendientes, cada una con su propia spec.
 
+## Base de datos (Supabase)
+
+Cuando se manipula la base de datos en este proyecto, **SIEMPRE debe hacerse mediante migraciones**:
+
+- **Usa MCP Supabase**: las migraciones se aplican al proyecto remoto con `apply_migration` (nombre descriptivo). No uses `execute_sql` para aplicar DDL estructural (crear/alterar tablas, columnas, RLS, políticas) salvo excepciones muy puntuales documentadas en el spec.
+- **Espejo local**: cada migración aplicada también debe quedar reflejada en `supabase/migrations/NNN_slug.sql` (numerado consecutivo). Ese archivo debe contener el DDL + políticas + datos de seed si corresponden, tal como se aplicó en el remoto.
+- **Nunca edites directamente** la base de datos para cambios estructurales sin generar una migración nueva.
+- **Para cambios de datos** (no estructurales), usa `execute_sql` con cautela y documenta en el spec. Los cambios estructurales SIEMPRE son migraciones.
+- **Consulta estado**: `supabase_list_migrations` para verificar el historial, `supabase_execute_sql` para inspeccionar estructura (information_schema, pg_policies, pg_class).
+- **RLS y políticas**: siempre habilitar RLS cuando aplique, y documentar las políticas explícitamente. Usar placeholders (`true`/`false`) solo si están justificados en el spec.
+- **Seguridad**: al finalizar cambios en DB, revisar `supabase_get_advisors` (security/performance) para detectar problemas. 
+
 ## Flujo spec-driven
 
 Skills del proyecto en `.agents/skills/` (instaladas desde `klerith/fernando-skills`, fijadas en `skills-lock.json`). Tienen `disable-model-invocation: true`: **no se cargan solas**, el usuario las invoca explícitamente como `/spec` y `/spec-impl`.
