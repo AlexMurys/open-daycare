@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import BrandPanel from "@/app/components/auth/BrandPanel";
 import LoginForm from "@/app/components/auth/LoginForm";
+import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión · OpenDayCare",
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data: claims } = await supabase.auth.getClaims();
+
+  if (claims) {
+    redirect("/");
+  }
+
   return (
     <div className="grid min-h-screen md:grid-cols-[1.05fr_1fr]">
       <BrandPanel />
