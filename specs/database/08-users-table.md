@@ -1,6 +1,6 @@
 # SPEC 08 — Tabla `users` con ENUMs, trigger de `auth.users` y seed de staff
 
-> **Status:** Approved
+> **Status:** Implementado
 > **Depends on:** SPEC 07 (`specs/07-daycares-table.md`) — patrón de migraciones (MCP `apply_migration` + espejo local `supabase/migrations/`) y tabla `daycares` ya sembrada. Referencia: diccionario `../07-DB-Schema/opendaycare-database-schema.md` (externo al repo).
 > **Date:** 2026-10-15
 > **Objective:** Crear `public.users` (perfil de aplicación vinculado a `auth.users` vía trigger `AFTER INSERT`) con los ENUMs `user_role` y `user_status`, RLS habilitado con políticas placeholder y seed de un usuario staff de prueba, todo en una única migración con espejo local.
@@ -148,16 +148,16 @@ Este spec no toca `app/`.
 
 ## Acceptance criteria
 
-- [ ] El historial de migraciones incluye `create_users_and_staff_seed` como 5ª entrada.
-- [ ] `public.user_role` existe con exactamente `staff`, `parent`, `admin` y `public.user_status` con `pending`, `active`.
-- [ ] `public.users` existe con exactamente 10 columnas: `id` (PK, FK→`auth.users` `ON DELETE CASCADE`), `daycare_id` (NOT NULL, FK→`daycares`), `role user_role NOT NULL` (sin default), `status user_status NOT NULL DEFAULT 'active'`, `full_name text NOT NULL`, `avatar_url text NULL`, `notify_on_post boolean NOT NULL DEFAULT true`, `daily_summary_enabled boolean NOT NULL DEFAULT true`, `created_at`/`updated_at timestamptz NOT NULL DEFAULT now()`.
-- [ ] RLS habilitado en `users` con 4 políticas: `users_read` (SELECT `true`), `users_insert`/`users_update`/`users_delete` (`false`).
-- [ ] `public.handle_new_user()` existe (plpgsql, SECURITY DEFINER, `search_path ''`) y el trigger `on_auth_user_created` está registrado `AFTER INSERT` en `auth.users`.
-- [ ] `auth.users` tiene 1 fila (`staff@google.com`, `email_confirmed_at` no nulo) y `public.users` exactamente 1 fila vinculada: mismo `id`, `full_name='test'`, `role='staff'`, `status='active'`, `daycare_id` = id de "Guardería Sala Soles", `notify_on_post` y `daily_summary_enabled` en `true`, timestamps no nulos.
-- [ ] El smoke test de login con `staff@google.com` / `staff123@` devuelve `access_token`.
-- [ ] Los advisors de seguridad y performance no reportan errores nuevos por `users`.
-- [ ] Existe `supabase/migrations/002_create_users_table.sql` con el DDL + seed tal como se aplicó.
-- [ ] Ningún archivo de `app/` cambia.
+- [x] El historial de migraciones incluye `create_users_and_staff_seed` como 5ª entrada.
+- [x] `public.user_role` existe con exactamente `staff`, `parent`, `admin` y `public.user_status` con `pending`, `active`.
+- [x] `public.users` existe con exactamente 10 columnas: `id` (PK, FK→`auth.users` `ON DELETE CASCADE`), `daycare_id` (NOT NULL, FK→`daycares`), `role user_role NOT NULL` (sin default), `status user_status NOT NULL DEFAULT 'active'`, `full_name text NOT NULL`, `avatar_url text NULL`, `notify_on_post boolean NOT NULL DEFAULT true`, `daily_summary_enabled boolean NOT NULL DEFAULT true`, `created_at`/`updated_at timestamptz NOT NULL DEFAULT now()`.
+- [x] RLS habilitado en `users` con 4 políticas: `users_read` (SELECT `true`), `users_insert`/`users_update`/`users_delete` (`false`).
+- [x] `public.handle_new_user()` existe (plpgsql, SECURITY DEFINER, `search_path ''`) y el trigger `on_auth_user_created` está registrado `AFTER INSERT` en `auth.users`.
+- [x] `auth.users` tiene 1 fila (`staff@google.com`, `email_confirmed_at` no nulo) y `public.users` exactamente 1 fila vinculada: mismo `id`, `full_name='test'`, `role='staff'`, `status='active'`, `daycare_id` = id de "Guardería Sala Soles", `notify_on_post` y `daily_summary_enabled` en `true`, timestamps no nulos.
+- [x] El smoke test de login con `staff@google.com` / `staff123@` devuelve `access_token`.
+- [x] Los advisors de seguridad y performance no reportan errores nuevos por `users`.
+- [x] Existe `supabase/migrations/002_create_users_table.sql` con el DDL + seed tal como se aplicó.
+- [x] Ningún archivo de `app/` cambia.
 
 ## Decisions
 
