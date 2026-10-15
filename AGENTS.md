@@ -78,6 +78,38 @@ Cuando se manipula la base de datos en este proyecto, **SIEMPRE debe hacerse med
 - **RLS y políticas**: siempre habilitar RLS cuando aplique, y documentar las políticas explícitamente. Usar placeholders (`true`/`false`) solo si están justificados en el spec.
 - **Seguridad**: al finalizar cambios en DB, revisar `supabase_get_advisors` (security/performance) para detectar problemas. 
 
+## Cliente Supabase en la app (@supabase/ssr)
+
+Para interactuar con la base de datos desde la aplicación se usan los paquetes oficiales **`@supabase/supabase-js`** y **`@supabase/ssr`** (ya instalados con pnpm). No uses fetch directo a la REST API ni clientes custom: siempre el SDK de Supabase.
+
+Helpers en `utils/supabase/`:
+
+- **`utils/supabase/server.ts`** → `createClient(cookieStore)`: cliente para Server Components, Server Actions y Route Handlers. Recibe el `cookieStore` de `await cookies()`.
+- **`utils/supabase/client.ts`** → `createClient()`: cliente para Client Components (browser).
+- **`utils/supabase/proxy.ts`** → `updateSession(request)`: refresca el token de sesión con `supabase.auth.getClaims()` y propaga las cookies + headers de cache.
+
+`proxy.ts` en la raíz del proyecto (convención de Next.js 16, reemplaza a `middleware.ts`) llama a `updateSession` con matcher que excluye assets estáticos.
+
+Variables de entorno en `.env.local` (ya configuradas): `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+
+Uso típico en un Server Component:
+
+```tsx
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+
+const cookieStore = await cookies()
+const supabase = createClient(cookieStore)
+const { data } = await supabase.from('tabla').select()
+```
+
+Reglas:
+
+- **Server Components / Actions**: importa de `@/utils/supabase/server`.
+- **Client Components**: importa de `@/utils/supabase/client`.
+- **Auth en server**: usa `supabase.auth.getClaims()` (verifica el JWT) o `supabase.auth.getUser()` (llamada de red). **Nunca** confíes en `getSession()` para autorización.
+- RLS aplica a las queries del SDK igual que en el Data API: las políticas definen qué filas ve cada usuario autenticado.
+
 ## Flujo spec-driven
 
 Skills del proyecto en `.agents/skills/` (instaladas desde `klerith/fernando-skills`, fijadas en `skills-lock.json`). Tienen `disable-model-invocation: true`: **no se cargan solas**, el usuario las invoca explícitamente como `/spec` y `/spec-impl`.
