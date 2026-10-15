@@ -1,6 +1,6 @@
 # SPEC 09 — Autenticación real (email + password) y protección de rutas
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 03 (`specs/03-login-and-account-activation.md`) — pantallas `/login` y `/activate-account` en `app/(auth)/` y `LoginForm.tsx` a convertir; SPEC 08 (`specs/database/08-users-table.md`) — seed staff (`staff@google.com` / `staff123@`) para verificar login real; SPEC 01/02 — rutas `(daycare)` a proteger
 > **Date:** 2026-10-15
 > **Objective:** Implementar el login real con email y password contra Supabase Auth (`signInWithPassword` vía server actions), el logout del sidebar y la protección de rutas en dos capas (proxy + layout) que dejan `/login` y `/activate-account` públicas y todo lo demás privado.
@@ -75,20 +75,20 @@ utils/supabase/
 
 ## Acceptance criteria
 
-- [ ] `pnpm exec eslint app` termina sin errores.
-- [ ] `pnpm exec tsc --noEmit` termina sin errores.
-- [ ] `pnpm build` completa con éxito.
-- [ ] Con el dev server relanzado limpio, los flujos de login/logout/protección no loguean errores ni warnings en la terminal.
-- [ ] Sin sesión: navegar directamente a `/`, `/kids` y `/kids/1` redirige a `/login` sin renderizar contenido protegido.
-- [ ] Sin sesión: `/login` y `/activate-account` son accesibles e idénticas a SPEC 03.
-- [ ] Login con `staff@google.com` / `staff123@` autentica y termina en `/` (feed) con sesión activa.
-- [ ] Login con password incorrecta muestra el error inline en español bajo el botón y no navega.
-- [ ] Con sesión activa, visitar `/login` redirige a `/`.
-- [ ] "Cerrar sesión" (sidebar desktop y drawer móvil) termina la sesión, lleva a `/login`, y `/` vuelve a redirigir a `/login`.
-- [ ] Con el redirect del proxy deshabilitado temporalmente en dev, `/` sin sesión sigue redirigiendo a `/login` (capa 2 del layout funciona sola).
-- [ ] Sin cambios en DB: `supabase_list_migrations` sin entradas nuevas y políticas de `users` intactas.
-- [ ] `/login` en desktop se ve idéntico a la referencia (única adición: estado de error inline).
-- [ ] Las pantallas previas (feed, kids, dialogs, activate-account) funcionan igual.
+- [x] `pnpm exec eslint app` termina sin errores.
+- [x] `pnpm exec tsc --noEmit` termina sin errores.
+- [x] `pnpm build` completa con éxito.
+- [x] Con el dev server relanzado limpio, los flujos de login/logout/protección no loguean errores ni warnings en la terminal.
+- [x] Sin sesión: navegar directamente a `/`, `/kids` y `/kids/1` redirige a `/login` sin renderizar contenido protegido.
+- [x] Sin sesión: `/login` y `/activate-account` son accesibles e idénticas a SPEC 03.
+- [x] Login con `staff@google.com` / `staff123@` autentica y termina en `/` (feed) con sesión activa.
+- [x] Login con password incorrecta muestra el error inline en español bajo el botón y no navega.
+- [x] Con sesión activa, visitar `/login` redirige a `/`.
+- [x] "Cerrar sesión" (sidebar desktop y drawer móvil) termina la sesión, lleva a `/login`, y `/` vuelve a redirigir a `/login`.
+- [x] Con el redirect del proxy deshabilitado temporalmente en dev, `/` sin sesión sigue redirigiendo a `/login` (capa 2 del layout funciona sola).
+- [x] Sin cambios en DB: `supabase_list_migrations` sin entradas nuevas y políticas de `users` intactas.
+- [x] `/login` en desktop se ve idéntico a la referencia (única adición: estado de error inline).
+- [x] Las pantallas previas (feed, kids, dialogs, activate-account) funcionan igual.
 
 ## Decisions
 
