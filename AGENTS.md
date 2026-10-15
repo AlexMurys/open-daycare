@@ -82,7 +82,7 @@ Cuando se manipula la base de datos en este proyecto, **SIEMPRE debe hacerse med
 
 Skills del proyecto en `.agents/skills/` (instaladas desde `klerith/fernando-skills`, fijadas en `skills-lock.json`). Tienen `disable-model-invocation: true`: **no se cargan solas**, el usuario las invoca explícitamente como `/spec` y `/spec-impl`.
 
-- `/spec` escribe `specs/NN-slug.md` con estado `Draft`.
+- `/spec` escribe `specs/NN-slug.md` con estado `Draft`. **Excepción**: cualquier spec relacionado con la base de datos (tablas, columnas, migraciones, RLS, políticas, seeds, etc.) se escribe en `specs/database/NN-slug.md`.
 - `/spec-impl` exige estado **Approved**, crea la branch `spec-NN-slug` y va paso a pauso. `specs/.spec-config.yml` existe con `AutoCreateBranch: true`.
 - `/verify-spec` delega en el subagente `spec-verifier`: verifica los acceptance criteria con Playwright + Context7, corrige lo que falle y marca los checks. Si todo queda en verde, pasa el estado del spec a `Implemented`.
 - No escribas código sin spec cuando el usuario launch el flujo `/spec`.
