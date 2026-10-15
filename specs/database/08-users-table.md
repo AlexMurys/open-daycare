@@ -21,7 +21,8 @@
   - Función `public.handle_new_user()` (`plpgsql`, `SECURITY DEFINER`, `set search_path = ''`) que inserta en `public.users` leyendo `daycare_id` (cast a uuid), `role` (coalesce `'parent'`) y `full_name` (coalesce `''`) de `new.raw_user_meta_data`.
   - Trigger `on_auth_user_created` `AFTER INSERT ON auth.users FOR EACH ROW`.
   - Seed dentro de la migración: 1 usuario staff en `auth.users` (`staff@google.com` / `staff123@` con `crypt`+`gen_salt`, `email_confirmed_at` para login directo, `raw_user_meta_data` con `daycare_id` de "Guardería Sala Soles", `role: 'staff'`, `full_name: 'test'`); el trigger crea la fila de `public.users`.
-- Archivo local espejo: `supabase/migrations/002_create_users_table.sql` con el DDL + seed tal como se aplicó.
+- Segunda migración `users_revoke_execute_and_index_fk` (derivada de la verificación): `revoke execute on function public.handle_new_user() from public, anon, authenticated` e índice `users_daycare_id_idx` sobre la FK `daycare_id`.
+- Archivos locales espejo: `supabase/migrations/002_create_users_table.sql` (DDL + seed) y `supabase/migrations/003_users_revoke_execute_and_index_fk.sql`.
 - Verificación: historial, estructura, ENUMs, políticas, trigger, filas vinculadas, smoke test de login vía `POST /auth/v1/token`, advisors, `git status`.
 
 **Out of scope (for future specs):**
@@ -122,13 +123,21 @@ select
 from new_user;
 ```
 
+El mismo contenido vive en `supabase/migrations/002_create_users_table.sql`. Segunda migración aplicada (`users_revoke_execute_and_index_fk`) por hallazgos de advisors — espejo en `supabase/migrations/003_users_revoke_execute_and_index_fk.sql`:
+
+```sql
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+create index users_daycare_id_idx on public.users (daycare_id);
+```
+
 Notas:
 
 - El insert en `auth.users` se completó tras la primera aplicación del smoke test: GoTrue exige `aud='authenticated'`, `role='authenticated'`, `instance_id='00000000-0000-0000-0000-000000000000'`, `created_at`/`updated_at` no nulos y tokens en `''`. El fix se aplicó con `execute_sql` sobre la fila sembrada y quedó reflejado tal cual en el espejo local (el DDL/seed del espejo es el estado final que hace pasar el login).
-- **`auth.identities`**: la fila de identidad (`provider='email'`, `provider_id = id::text`, `identity_data` con `sub`/`email`/`email_verified`/`phone_verified`) es obligatoria; sin ella el login por password devuelve `invalid_credentials`. No es una columna generada la `email` de esa tabla (es generada; no se inserta).
+- **`auth.identities`**: la fila de identidad (`provider='email'`, `provider_id = id::text`, `identity_data` con `sub`/`email`/`email_verified`/`phone_verified`) es obligatoria; sin ella el login por password devuelve `invalid_credentials`. La columna `email` de esa tabla es generada; no se inserta.
 - `search_path = ''` obliga a calificar todos los objetos (`public.users`, `public.user_role`).
+- El `revoke execute` y el índice `users_daycare_id_idx` cierran los advisors nuevos de seguridad (`SECURITY DEFINER` llamable por `anon`/`authenticated`) y performance (FK sin índice) detectados en la verificación.
 
-El mismo contenido vive en `supabase/migrations/002_create_users_table.sql`. Este spec no toca `app/`.
+Este spec no toca `app/`.
 
 ## Implementation plan
 
@@ -161,6 +170,8 @@ El mismo contenido vive en `supabase/migrations/002_create_users_table.sql`. Est
 - **Sí:** RLS placeholder igual que SPEC 07 (lectura pública, escritura bloqueada) hasta el spec de auth. _(decisión del usuario; el trigger bypassa RLS por SECURITY DEFINER)_
 - **Sí:** una única migración `create_users_and_staff_seed` con DDL + seed. _(decisión del usuario)_
 - **Sí:** `set search_path = ''` en `handle_new_user()` — mejor práctica Supabase para funciones SECURITY DEFINER.
+- **Sí:** `revoke execute` sobre `handle_new_user()` para `public, anon, authenticated` e índice `users_daycare_id_idx` sobre `daycare_id` (migración `users_revoke_execute_and_index_fk`), cerrando los advisors nuevos de seguridad y performance. _(hallazgo durante la verificación)_
+- **Sí (aceptado):** el índice `users_daycare_id_idx` reporta `unused_index` (INFO) por ser nuevo y no haberse ejercitado aún; es el trade-off frente al lint de FK sin índice (`unindexed_foreign_keys`). Se mantiene porque la cobertura de la FK es la recomendación de Supabase. _(hallazgo durante la verificación)_
 - **Sí:** el trigger coalescea `role`→`'parent'` y `full_name`→`''`; `daycare_id` sin coalesce (signup sin metadata falla explícito por NOT NULL).
 - **Sí:** FK `daycare_id` sin cláusula ON DELETE (NO ACTION): borrar una guardería con usuarios queda bloqueado.
 - **No:** default de `role` en la DB — el trigger ya coalescea a `'parent'`.
