@@ -49,18 +49,42 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Seed: usuario staff de prueba (el trigger crea la fila de public.users)
-INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at,
-                        raw_app_meta_data, raw_user_meta_data)
-VALUES (
-  gen_random_uuid(),
-  'staff@google.com',
-  crypt('staff123@', gen_salt('bf')),
-  now(),
-  '{"provider": "email", "providers": ["email"]}'::jsonb,
-  jsonb_build_object(
-    'daycare_id', (SELECT id FROM public.daycares WHERE name = 'Guardería Sala Soles'),
-    'role', 'staff',
-    'full_name', 'test'
+-- Seed: usuario staff de prueba (el trigger crea la fila de public.users).
+-- El insert en auth.users requiere las columnas aud/role/instance_id y los
+-- timestamps no nulos, y una fila en auth.identities (provider email), o el
+-- login por password falla. Ver notas del SPEC 08.
+WITH new_user AS (
+  INSERT INTO auth.users (
+    id, email, encrypted_password, email_confirmed_at,
+    aud, role, instance_id,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, recovery_token, email_change_token_new, email_change,
+    reauthentication_token, created_at, updated_at
   )
-);
+  VALUES (
+    gen_random_uuid(),
+    'staff@google.com',
+    crypt('staff123@', gen_salt('bf')),
+    now(),
+    'authenticated', 'authenticated', '00000000-0000-0000-0000-000000000000',
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+      'daycare_id', (SELECT id FROM public.daycares WHERE name = 'Guardería Sala Soles'),
+      'role', 'staff',
+      'full_name', 'test'
+    ),
+    '', '', '', '', '',
+    now(), now()
+  )
+  RETURNING id, email
+)
+INSERT INTO auth.identities (provider_id, user_id, identity_data, provider,
+                             last_sign_in_at, created_at, updated_at)
+SELECT
+  id::text,
+  id,
+  jsonb_build_object('sub', id::text, 'email', email,
+                     'email_verified', true, 'phone_verified', false),
+  'email',
+  now(), now(), now()
+FROM new_user;

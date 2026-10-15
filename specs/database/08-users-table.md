@@ -84,26 +84,48 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- Seed: usuario staff de prueba (el trigger crea la fila de public.users)
-insert into auth.users (id, email, encrypted_password, email_confirmed_at,
-                        raw_app_meta_data, raw_user_meta_data)
-values (
-  gen_random_uuid(),
-  'staff@google.com',
-  crypt('staff123@', gen_salt('bf')),
-  now(),
-  '{"provider": "email", "providers": ["email"]}'::jsonb,
-  jsonb_build_object(
-    'daycare_id', (select id from public.daycares where name = 'Guardería Sala Soles'),
-    'role', 'staff',
-    'full_name', 'test'
+-- Seed: usuario staff de prueba (el trigger crea la fila de public.users).
+-- Requiere aud/role/instance_id, timestamps no nulos y fila en auth.identities.
+with new_user as (
+  insert into auth.users (id, email, encrypted_password, email_confirmed_at,
+                          aud, role, instance_id,
+                          raw_app_meta_data, raw_user_meta_data,
+                          confirmation_token, recovery_token,
+                          email_change_token_new, email_change,
+                          reauthentication_token, created_at, updated_at)
+  values (
+    gen_random_uuid(),
+    'staff@google.com',
+    crypt('staff123@', gen_salt('bf')),
+    now(),
+    'authenticated', 'authenticated', '00000000-0000-0000-0000-000000000000',
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+      'daycare_id', (select id from public.daycares where name = 'Guardería Sala Soles'),
+      'role', 'staff',
+      'full_name', 'test'
+    ),
+    '', '', '', '', '',
+    now(), now()
   )
-);
+  returning id, email
+)
+insert into auth.identities (provider_id, user_id, identity_data, provider,
+                             last_sign_in_at, created_at, updated_at)
+select
+  id::text,
+  id,
+  jsonb_build_object('sub', id::text, 'email', email,
+                     'email_verified', true, 'phone_verified', false),
+  'email',
+  now(), now(), now()
+from new_user;
 ```
 
 Notas:
 
-- El insert en `auth.users` es mínimo; al aplicar se verifica contra `information_schema.columns` de `auth` qué columnas NOT NULL sin default exige la versión actual (p. ej. `instance_id`/`aud` según versión) y se completa lo que falte.
+- El insert en `auth.users` se completó tras la primera aplicación del smoke test: GoTrue exige `aud='authenticated'`, `role='authenticated'`, `instance_id='00000000-0000-0000-0000-000000000000'`, `created_at`/`updated_at` no nulos y tokens en `''`. El fix se aplicó con `execute_sql` sobre la fila sembrada y quedó reflejado tal cual en el espejo local (el DDL/seed del espejo es el estado final que hace pasar el login).
+- **`auth.identities`**: la fila de identidad (`provider='email'`, `provider_id = id::text`, `identity_data` con `sub`/`email`/`email_verified`/`phone_verified`) es obligatoria; sin ella el login por password devuelve `invalid_credentials`. No es una columna generada la `email` de esa tabla (es generada; no se inserta).
 - `search_path = ''` obliga a calificar todos los objetos (`public.users`, `public.user_role`).
 
 El mismo contenido vive en `supabase/migrations/002_create_users_table.sql`. Este spec no toca `app/`.
@@ -133,6 +155,7 @@ El mismo contenido vive en `supabase/migrations/002_create_users_table.sql`. Est
 - **Sí:** solo los ENUMs de `users` (`user_role`, `user_status`); los otros 4 llegan con sus tablas. _(decisión del usuario)_
 - **Sí:** trigger `AFTER INSERT` sobre `auth.users` incluido en este spec. _(decisión del usuario — patrón del diccionario y docs de Supabase)_
 - **Sí:** seed vía insert SQL directo en `auth.users` (`crypt`/`gen_salt` + `raw_user_meta_data`), scriptable vía MCP y versionado. _(decisión del usuario)_
+- **Sí:** completar el seed con `aud`/`role`/`instance_id`, timestamps y tokens en `''`, más una fila en `auth.identities` (`provider='email'`) — sin ellos GoTrue rechaza el login (`invalid_credentials`/`unexpected_failure`). Aplicado como fix de datos vía `execute_sql` y reflejado en el espejo local. _(hallazgo durante el smoke test)_
 - **Sí:** `daycare_id` NOT NULL — todo usuario pertenece a una guardería; `admin` se lee como admin de la guardería, no super-admin de plataforma. _(decisión del usuario)_
 - **Sí:** credenciales demo `test` / `staff@google.com` / `staff123@`. _(decisión del usuario; usuario de prueba desechable)_
 - **Sí:** RLS placeholder igual que SPEC 07 (lectura pública, escritura bloqueada) hasta el spec de auth. _(decisión del usuario; el trigger bypassa RLS por SECURITY DEFINER)_
