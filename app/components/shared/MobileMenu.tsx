@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
+import type { SidebarUser } from "@/app/_data/mock";
 
-export default function MobileMenu() {
+interface MobileMenuProps {
+  user: SidebarUser;
+}
+
+export default function MobileMenu({ user }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const close = () => setIsOpen(false);
@@ -64,7 +69,7 @@ export default function MobileMenu() {
             aria-label="Menú"
             className="relative h-full w-[248px]"
           >
-            <Sidebar onNavigate={close} />
+            <Sidebar onNavigate={close} user={user} />
             <button
               type="button"
               onClick={close}
