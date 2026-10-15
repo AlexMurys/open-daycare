@@ -37,7 +37,17 @@ export const updateSession = async (request: NextRequest) => {
 
   // IMPORTANT: do not run code between createServerClient and getClaims().
   // This can cause random logout warnings.
-  await supabase.auth.getClaims()
+  const { data: claims } = await supabase.auth.getClaims()
+
+  const { pathname } = request.nextUrl
+  const isPublicPath =
+    pathname.startsWith("/login") || pathname.startsWith("/activate-account")
+
+  if (!claims && !isPublicPath) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/login"
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 };
