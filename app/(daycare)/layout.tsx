@@ -1,8 +1,19 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import ComposeProvider from "@/app/components/compose/ComposeProvider";
 import MobileMenu from "@/app/components/shared/MobileMenu";
 import Sidebar from "@/app/components/shared/Sidebar";
+import { createClient } from "@/utils/supabase/server";
 
-export default function DaycareLayout({ children }: LayoutProps<"/">) {
+export default async function DaycareLayout({ children }: LayoutProps<"/">) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data: claims } = await supabase.auth.getClaims();
+
+  if (!claims) {
+    redirect("/login");
+  }
+
   return (
     <ComposeProvider>
       <div className="flex min-h-screen bg-canvas md:h-screen">
