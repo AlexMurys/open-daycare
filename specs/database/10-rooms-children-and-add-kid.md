@@ -1,6 +1,6 @@
 # SPEC 10 — Tablas `rooms` y `children` + "Agregar niño" persistente
 
-> **Status:** Approved
+> **Status:** Implemented
 > **Depends on:** SPEC 04 (`specs/04-add-kid-dialog.md` — dialog a conectar), SPEC 08 (`specs/database/08-users-table.md` — patrón de migraciones, `users` + seed staff), SPEC 09 (`specs/09-auth-email-password-and-route-protection.md` — login real y protección de rutas). Referencia: diccionario `../07-DB-Schema/opendaycare-database-schema.md` (externo al repo).
 > **Date:** 2026-10-16
 > **Objective:** Crear las tablas `rooms` y `children` (ENUM `child_status`, RLS auth-based, seed de 3 salas) y conectar el dialog "Agregar niño" para que Guardar persista vía server action y `/kids` muestre los niños reales de la DB.
@@ -155,25 +155,25 @@ supabase/migrations/
 
 ## Acceptance criteria
 
-- [ ] El historial incluye `create_rooms_children` como 7ª entrada.
-- [ ] `public.rooms` existe con exactamente 4 columnas (`id` PK, `daycare_id` NOT NULL FK→`daycares`, `name` NOT NULL, `created_at`) — sin `updated_at`; índice `rooms_daycare_id_idx`.
-- [ ] `public.child_status` existe con exactamente `active`, `archived`.
-- [ ] `public.children` existe con exactamente 10 columnas: `id` PK, `room_id` NOT NULL FK→`rooms`, `full_name` NOT NULL, `birth_date date` NOT NULL, `enrolled_at date` NOT NULL DEFAULT `current_date`, `medical_notes text` NULL, `allergy_tags text[]` NOT NULL DEFAULT `'{}'`, `photo_consent boolean` NOT NULL DEFAULT `true`, `status child_status` NOT NULL DEFAULT `'active'`, `created_at`/`updated_at` NOT NULL DEFAULT `now()`; índice `children_room_id_idx`.
-- [ ] RLS habilitado en ambas tablas con 8 políticas: `rooms_read`/`children_read` (SELECT `to authenticated`), `children_insert` (INSERT `to authenticated` con check staff + guardería dueña de la sala), resto (`false`).
-- [ ] Seed: exactamente 3 rooms en "Guardería Sala Soles" (Soles, Lunas, Estrellas); `children` sin filas.
-- [ ] Existe `supabase/migrations/004_rooms_children_tables.sql` con el DDL aplicado.
-- [ ] Advisors de security/performance no reportan errores nuevos por `rooms`/`children`.
-- [ ] `app/_data/rooms.ts` eliminado; el selector SALA muestra las 3 salas desde la DB arrancando en Soles.
-- [ ] `/kids` con sesión staff muestra la grilla vacía: divisor "SALA SOLES" con "0 niños" y sin cards.
-- [ ] Guardar con todo válido persiste: tarjeta nueva visible con contador 1, y al refrescar el niño sigue (fila en DB con `enrolled_at` = hoy, `photo_consent` = true, `status` = `active`).
-- [ ] Guardar con nombre vacío o fecha inválida muestra los errores en línea de SPEC 04 y no llama la acción.
-- [ ] Un error de la acción muestra el mensaje inline en el dialog y no cierra.
-- [ ] La tarjeta nueva linkea a `/kids/{uuid}` (404 hasta el spec de perfil — aceptado).
-- [ ] `avatarColor` del niño nuevo es determinista (mismo uuid → mismo color, dentro de las 6 paletas).
-- [ ] Insert anónimo/parent sobre `children` falla por RLS (verificación negativa).
-- [ ] Sin sesión, `/kids` sigue redirigiendo a `/login` (SPEC 09 intacto).
-- [ ] `pnpm exec eslint app`, `pnpm exec tsc --noEmit` y `pnpm build` terminan limpios; runtime sin errores/warnings en la terminal.
-- [ ] Las pantallas previas (feed, login, dialogs, perfil mock) funcionan igual.
+- [x] El historial incluye `create_rooms_children` como 7ª entrada.
+- [x] `public.rooms` existe con exactamente 4 columnas (`id` PK, `daycare_id` NOT NULL FK→`daycares`, `name` NOT NULL, `created_at`) — sin `updated_at`; índice `rooms_daycare_id_idx`.
+- [x] `public.child_status` existe con exactamente `active`, `archived`.
+- [x] `public.children` existe con exactamente 11 columnas: `id` PK, `room_id` NOT NULL FK→`rooms`, `full_name` NOT NULL, `birth_date date` NOT NULL, `enrolled_at date` NOT NULL DEFAULT `current_date`, `medical_notes text` NULL, `allergy_tags text[]` NOT NULL DEFAULT `'{}'`, `photo_consent boolean` NOT NULL DEFAULT `true`, `status child_status` NOT NULL DEFAULT `'active'`, `created_at` NOT NULL DEFAULT `now()`, `updated_at` NOT NULL DEFAULT `now()`; índice `children_room_id_idx`.
+- [x] RLS habilitado en ambas tablas con 8 políticas: `rooms_read`/`children_read` (SELECT `to authenticated`), `children_insert` (INSERT `to authenticated` con check staff + guardería dueña de la sala), resto (`false`).
+- [x] Seed: exactamente 3 rooms en "Guardería Sala Soles" (Soles, Lunas, Estrellas); `children` sin filas.
+- [x] Existe `supabase/migrations/004_rooms_children_tables.sql` con el DDL aplicado.
+- [x] Advisors de security/performance no reportan errores nuevos por `rooms`/`children`.
+- [x] `app/_data/rooms.ts` eliminado; el selector SALA muestra las 3 salas desde la DB arrancando en Soles.
+- [x] `/kids` con sesión staff muestra la grilla vacía: divisor "SALA SOLES" con "0 niños" y sin cards.
+- [x] Guardar con todo válido persiste: tarjeta nueva visible con contador 1, y al refrescar el niño sigue (fila en DB con `enrolled_at` = hoy, `photo_consent` = true, `status` = `active`).
+- [x] Guardar con nombre vacío o fecha inválida muestra los errores en línea de SPEC 04 y no llama la acción.
+- [x] Un error de la acción muestra el mensaje inline en el dialog y no cierra.
+- [x] La tarjeta nueva linkea a `/kids/{uuid}` (404 hasta el spec de perfil — aceptado).
+- [x] `avatarColor` del niño nuevo es determinista (mismo uuid → mismo color, dentro de las 6 paletas).
+- [x] Insert anónimo/parent sobre `children` falla por RLS (verificación negativa).
+- [x] Sin sesión, `/kids` sigue redirigiendo a `/login` (SPEC 09 intacto).
+- [x] `pnpm exec eslint app`, `pnpm exec tsc --noEmit` y `pnpm build` terminan limpios; runtime sin errores/warnings en la terminal.
+- [x] Las pantallas previas (feed, login, dialogs, perfil mock) funcionan igual.
 
 ## Decisions
 

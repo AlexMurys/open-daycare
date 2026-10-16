@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { kids } from "@/app/_data/kids";
+import {
+  mapChildRow,
+  type ChildRow,
+} from "@/app/components/kids/childMapping";
 import AllergyBox from "@/app/components/kids/AllergyBox";
 import DetailsCard from "@/app/components/kids/DetailsCard";
 import ParentsCard from "@/app/components/kids/ParentsCard";
 import ProfileHeader from "@/app/components/kids/ProfileHeader";
+import { createClient } from "@/utils/supabase/server";
 
 export function generateStaticParams() {
   return kids.map((kid) => ({ id: String(kid.id) }));
@@ -12,9 +18,34 @@ export function generateStaticParams() {
 
 export default async function KidProfilePage({ params }: PageProps<"/kids/[id]">) {
   const { id } = await params;
-  const kid = kids.find((item) => item.id === Number(id));
 
-  if (!kid) notFound();
+  const isUuid = id.includes("-");
+
+  let kid;
+
+  if (isUuid) {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const { data: childRow } = await supabase
+      .from("children")
+      .select("id, full_name, birth_date, enrolled_at, medical_notes, allergy_tags, room_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (!childRow) notFound();
+
+    const { data: room } = await supabase
+      .from("rooms")
+      .select("name")
+      .eq("id", childRow.room_id)
+      .maybeSingle();
+
+    kid = mapChildRow(childRow as ChildRow, room?.name ?? "");
+  } else {
+    kid = kids.find((item) => item.id === Number(id));
+    if (!kid) notFound();
+  }
 
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 pt-20 pb-20 md:px-10 md:pt-[34px] md:pb-20">
