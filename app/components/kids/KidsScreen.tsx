@@ -1,63 +1,49 @@
 "use client";
 
 import { useState } from "react";
+import { addChild } from "@/app/actions/kids";
 import type { Kid } from "@/app/_data/kids";
 import AddKidButton from "./AddKidButton";
 import type { NewKidInput } from "./AddKidDialog";
-import { AVATAR_ORDER, ES_MONTHS } from "./childMapping";
+import type { RoomOption } from "./childMapping";
 import KidsList from "./KidsList";
 
-function ageFromBirthdate(birthdate: string): number {
-  const [day, month, year] = birthdate.split("/").map(Number);
-  const today = new Date();
-  let age = today.getFullYear() - year;
-  const beforeBirthday =
-    today.getMonth() + 1 < month ||
-    (today.getMonth() + 1 === month && today.getDate() < day);
-  if (beforeBirthday) age -= 1;
-  return age;
-}
-
-function formatBirthDate(birthdate: string): string {
+function toIsoDate(birthdate: string): string {
   const [day, month, year] = birthdate.split("/");
-  return `${day} ${ES_MONTHS[Number(month) - 1]} ${year}`;
-}
-
-function currentEnrolledSince(): string {
-  const today = new Date();
-  return `${ES_MONTHS[today.getMonth()]} ${today.getFullYear()}`;
-}
-
-function toKid(input: NewKidInput, prev: Kid[]): Kid {
-  const id = prev.reduce((max, kid) => Math.max(max, Number(kid.id)), 0) + 1;
-  const name = input.name.trim();
-  const allergyLabel = input.allergies[0]?.trim().toUpperCase();
-  const allergyNotes = input.notes.trim();
-
-  return {
-    id,
-    name,
-    initial: name.charAt(0).toUpperCase(),
-    age: ageFromBirthdate(input.birthdate),
-    parents: [],
-    avatarColor: AVATAR_ORDER[prev.length % AVATAR_ORDER.length],
-    ...(allergyLabel ? { allergyLabel } : {}),
-    ...(allergyNotes ? { allergyNotes } : {}),
-    birthDate: formatBirthDate(input.birthdate),
-    room: input.room,
-    enrolledSince: currentEnrolledSince(),
-  };
+  return `${year}-${month}-${day}`;
 }
 
 type KidsScreenProps = {
   initialKids: Kid[];
+  rooms: RoomOption[];
 };
 
-export default function KidsScreen({ initialKids }: KidsScreenProps) {
+export default function KidsScreen({ initialKids, rooms }: KidsScreenProps) {
   const [list, setList] = useState<Kid[]>(initialKids);
 
-  function handleAddKid(input: NewKidInput) {
-    setList((prev) => [...prev, toKid(input, prev)]);
+  async function handleAddKid(
+    input: NewKidInput,
+  ): Promise<{ error: string | null }> {
+    const room = rooms.find((option) => option.name === input.room);
+    if (!room) {
+      return { error: "No se pudo guardar el niño." };
+    }
+
+    const result = await addChild({
+      fullName: input.name,
+      birthDate: toIsoDate(input.birthdate),
+      roomId: room.id,
+      allergyTags: input.allergies,
+      medicalNotes: input.notes,
+    });
+
+    if (result.error || !result.kid) {
+      return { error: result.error ?? "No se pudo guardar el niño." };
+    }
+
+    const newKid = result.kid;
+    setList((prev) => [...prev, newKid]);
+    return { error: null };
   }
 
   const count = list.length;
@@ -73,7 +59,7 @@ export default function KidsScreen({ initialKids }: KidsScreenProps) {
             Niños
           </h1>
         </div>
-        <AddKidButton onAddKid={handleAddKid} />
+        <AddKidButton rooms={rooms} onAddKid={handleAddKid} />
       </header>
 
       <KidsList kids={list}>

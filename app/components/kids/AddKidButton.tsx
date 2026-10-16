@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import AddKidDialog, { type NewKidInput } from "./AddKidDialog";
+import type { RoomOption } from "./childMapping";
 
 type AddKidButtonProps = {
-  onAddKid: (input: NewKidInput) => void;
+  rooms: RoomOption[];
+  onAddKid: (input: NewKidInput) => Promise<{ error: string | null }>;
 };
 
-export default function AddKidButton({ onAddKid }: AddKidButtonProps) {
+export default function AddKidButton({ rooms, onAddKid }: AddKidButtonProps) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
@@ -42,6 +44,7 @@ export default function AddKidButton({ onAddKid }: AddKidButtonProps) {
         Agregar niño
       </button>
       <AddKidDialog
+        rooms={rooms}
         open={open}
         onClose={() => setOpen(false)}
         onSave={onAddKid}
