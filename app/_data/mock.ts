@@ -14,7 +14,7 @@ export interface FeedPost {
   type: PostType;
   author: string;
   initial?: string;
-  kidIds?: number[];
+  kidIds?: (string | number)[];
   time: string;
   audience: string;
   text: string;

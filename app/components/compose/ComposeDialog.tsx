@@ -89,7 +89,7 @@ export default function ComposeDialog({
   const firstParaRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
 
-  const [para, setPara] = useState<number[] | "room" | null>(null);
+  const [para, setPara] = useState<(string | number)[] | "room" | null>(null);
   const [type, setType] = useState<PostType | null>(null);
   const [text, setText] = useState("");
   const [paraError, setParaError] = useState<string | null>(null);

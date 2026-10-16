@@ -19,7 +19,7 @@ export interface ParentLink {
 }
 
 export interface Kid {
-  id: number;
+  id: string | number;
   name: string;
   initial: string;
   age: number;

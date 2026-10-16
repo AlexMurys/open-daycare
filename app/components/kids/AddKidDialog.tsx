@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { rooms } from "@/app/_data/rooms";
+import type { RoomOption } from "./childMapping";
 
 const LABEL_CLASS =
   "mb-2 block text-[12px] font-extrabold tracking-[0.7px] text-ink-faint";
@@ -72,21 +72,30 @@ export type NewKidInput = {
 };
 
 type AddKidDialogProps = {
+  rooms: RoomOption[];
   open: boolean;
   onClose: () => void;
-  onSave: (input: NewKidInput) => void;
+  onSave: (input: NewKidInput) => Promise<{ error: string | null }>;
 };
 
-export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProps) {
+export default function AddKidDialog({
+  rooms,
+  open,
+  onClose,
+  onSave,
+}: AddKidDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const prevBirthdateRef = useRef("");
   const roomWrapRef = useRef<HTMLDivElement>(null);
   const roomTriggerRef = useRef<HTMLDivElement>(null);
 
+  const roomNames = rooms.map((option) => option.name);
+  const defaultRoom = roomNames[0] ?? "";
+
   const [name, setName] = useState("");
   const [birthdate, setBirthdate] = useState("");
-  const [room, setRoom] = useState<string>(rooms[0]);
+  const [room, setRoom] = useState<string>(defaultRoom);
   const [roomOpen, setRoomOpen] = useState(false);
   const [roomUp, setRoomUp] = useState(false);
   const [roomHighlight, setRoomHighlight] = useState(0);
@@ -95,17 +104,21 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
   const [notes, setNotes] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [birthdateError, setBirthdateError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   function resetForm() {
     setName("");
     setBirthdate("");
-    setRoom(rooms[0]);
+    setRoom(defaultRoom);
     setRoomOpen(false);
     setAllergies([]);
     setAllergyDraft("");
     setNotes("");
     setNameError(null);
     setBirthdateError(null);
+    setSaveError(null);
+    setSaving(false);
     prevBirthdateRef.current = "";
   }
 
@@ -180,7 +193,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
 
   function openRoomList() {
     setRoomOpen(true);
-    setRoomHighlight(Math.max(0, rooms.indexOf(room)));
+    setRoomHighlight(Math.max(0, roomNames.indexOf(room)));
   }
 
   function toggleRoomList() {
@@ -194,7 +207,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
     if (wrap && dialog) {
       const wrapRect = wrap.getBoundingClientRect();
       const dialogRect = dialog.getBoundingClientRect();
-      const menuHeight = rooms.length * 44 + 11;
+      const menuHeight = roomNames.length * 44 + 11;
       const spaceBelow = dialogRect.bottom - wrapRect.bottom;
       const spaceAbove = wrapRect.top - dialogRect.top;
       up = menuHeight + 12 > spaceBelow && spaceAbove > spaceBelow;
@@ -206,6 +219,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
   function selectRoom(option: string) {
     setRoom(option);
     setRoomOpen(false);
+    if (saveError) setSaveError(null);
     roomTriggerRef.current?.focus();
   }
 
@@ -214,39 +228,47 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
       case "ArrowDown":
         event.preventDefault();
         if (!roomOpen) openRoomList();
-        else setRoomHighlight((index) => (index + 1) % rooms.length);
+        else setRoomHighlight((index) => (index + 1) % roomNames.length);
         break;
       case "ArrowUp":
         event.preventDefault();
         if (!roomOpen) openRoomList();
         else
           setRoomHighlight(
-            (index) => (index - 1 + rooms.length) % rooms.length
+            (index) => (index - 1 + roomNames.length) % roomNames.length
           );
         break;
       case "Enter":
       case " ":
         event.preventDefault();
         if (!roomOpen) openRoomList();
-        else selectRoom(rooms[roomHighlight]);
+        else selectRoom(roomNames[roomHighlight]);
         break;
     }
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving) return;
     const nextNameError = name.trim() ? null : "Ingresá el nombre completo.";
     const nextBirthdateError = validateBirthdate(birthdate);
     setNameError(nextNameError);
     setBirthdateError(nextBirthdateError);
+    setSaveError(null);
     if (nextNameError || nextBirthdateError) return;
-    onSave({
+    setSaving(true);
+    const result = await onSave({
       name: name.trim(),
       birthdate,
       room,
       allergies,
       notes,
     });
+    setSaving(false);
+    if (result.error) {
+      setSaveError(result.error);
+      return;
+    }
     handleClose();
   }
 
@@ -256,6 +278,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
     prevBirthdateRef.current = masked;
     setBirthdate(masked);
     if (birthdateError) setBirthdateError(null);
+    if (saveError) setSaveError(null);
   }
 
   function addAllergy(value: string) {
@@ -263,6 +286,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
     if (!trimmed) return;
     setAllergies((prev) => [...prev, trimmed]);
     setAllergyDraft("");
+    if (saveError) setSaveError(null);
   }
 
   function handleAllergyChange(value: string) {
@@ -283,6 +307,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
 
   function removeAllergy(index: number) {
     setAllergies((prev) => prev.filter((_, i) => i !== index));
+    if (saveError) setSaveError(null);
   }
 
   return (
@@ -324,6 +349,14 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
         </div>
 
         <div className="overflow-y-auto px-[26px] py-6">
+          {saveError && (
+            <p
+              role="alert"
+              className="mb-[18px] rounded-[14px] border-[1.5px] border-accent bg-[#FBE3DB] px-4 py-[11px] text-[13px] font-bold text-[#D9684A]"
+            >
+              {saveError}
+            </p>
+          )}
           <div className="mb-[18px]">
             <label htmlFor="add-kid-name" className={LABEL_CLASS}>
               NOMBRE COMPLETO
@@ -337,6 +370,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
               onChange={(event) => {
                 setName(event.target.value);
                 if (nameError) setNameError(null);
+                if (saveError) setSaveError(null);
               }}
               aria-invalid={nameError ? true : undefined}
               className={`${INPUT_CLASS} ${nameError ? "border-accent" : "border-auth-line"}`}
@@ -405,12 +439,12 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
                   >
                     {rooms.map((option, index) => (
                       <li
-                        key={option}
+                        key={option.id}
                         id={`add-kid-room-option-${index}`}
                         role="option"
-                        aria-selected={option === room}
+                        aria-selected={option.name === room}
                         onMouseDown={(event) => event.preventDefault()}
-                        onClick={() => selectRoom(option)}
+                        onClick={() => selectRoom(option.name)}
                         onMouseEnter={() => setRoomHighlight(index)}
                         className={`cursor-pointer px-4 py-[11px] text-[15px] font-bold ${
                           index === roomHighlight
@@ -418,7 +452,7 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
                             : "text-ink-body"
                         }`}
                       >
-                        {option}
+                        {option.name}
                       </li>
                     ))}
                   </ul>
@@ -478,7 +512,10 @@ export default function AddKidDialog({ open, onClose, onSave }: AddKidDialogProp
             id="add-kid-notes"
             placeholder="Indicaciones, medicación, contactos…"
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+            onChange={(event) => {
+              setNotes(event.target.value);
+              if (saveError) setSaveError(null);
+            }}
             className={`${INPUT_CLASS} min-h-[90px] resize-y border-auth-line leading-normal`}
           />
         </div>
