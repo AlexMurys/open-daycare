@@ -1,34 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { Kid, KidAvatarColor } from "@/app/_data/kids";
+import type { Kid } from "@/app/_data/kids";
 import AddKidButton from "./AddKidButton";
 import type { NewKidInput } from "./AddKidDialog";
+import { AVATAR_ORDER, ES_MONTHS } from "./childMapping";
 import KidsList from "./KidsList";
-
-const ES_MONTHS = [
-  "ene",
-  "feb",
-  "mar",
-  "abr",
-  "may",
-  "jun",
-  "jul",
-  "ago",
-  "sep",
-  "oct",
-  "nov",
-  "dic",
-];
-
-const AVATAR_ORDER: KidAvatarColor[] = [
-  "sky",
-  "rose",
-  "mint",
-  "amber",
-  "violet",
-  "blue",
-];
 
 function ageFromBirthdate(birthdate: string): number {
   const [day, month, year] = birthdate.split("/").map(Number);
@@ -52,7 +29,7 @@ function currentEnrolledSince(): string {
 }
 
 function toKid(input: NewKidInput, prev: Kid[]): Kid {
-  const id = prev.reduce((max, kid) => Math.max(max, kid.id), 0) + 1;
+  const id = prev.reduce((max, kid) => Math.max(max, Number(kid.id)), 0) + 1;
   const name = input.name.trim();
   const allergyLabel = input.allergies[0]?.trim().toUpperCase();
   const allergyNotes = input.notes.trim();
