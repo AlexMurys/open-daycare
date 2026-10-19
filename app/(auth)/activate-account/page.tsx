@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { invitation } from "@/app/_data/invite";
-import ConsentCheckbox from "@/app/components/auth/ConsentCheckbox";
+import { cookies } from "next/headers";
+import ActivateAccountForm from "@/app/components/auth/ActivateAccountForm";
 import InviteCard from "@/app/components/auth/InviteCard";
+import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
   title: "Activar cuenta · OpenDayCare",
@@ -10,10 +10,34 @@ export const metadata: Metadata = {
 
 const LABEL_CLASS =
   "mb-2 block text-[12px] font-bold tracking-[0.7px] text-ink-faint";
-const INPUT_CLASS =
-  "mb-[18px] w-full rounded-[14px] border-[1.5px] bg-white px-4 py-[14px] text-[15px] text-ink placeholder:text-[#b6a99b]";
 
-export default function ActivateAccountPage() {
+interface InvitationInfo {
+  childName: string;
+  roomName: string;
+  parentName: string;
+  email: string;
+  expiresAt: string;
+  daycareId: string;
+}
+
+export default async function ActivateAccountPage({
+  searchParams,
+}: PageProps<"/activate-account">) {
+  const params = await searchParams;
+  const rawCode = params.code;
+  const code = (typeof rawCode === "string" ? rawCode : "").trim();
+
+  let info: InvitationInfo | null = null;
+
+  if (code) {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+    const { data } = await supabase.rpc("get_invitation_info", {
+      p_code: code,
+    });
+    info = data as InvitationInfo | null;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-10">
       <div className="w-full max-w-[440px]">
@@ -41,52 +65,18 @@ export default function ActivateAccountPage() {
           activar la cuenta.
         </p>
 
-        <InviteCard />
+        {info && <InviteCard childName={info.childName} roomName={info.roomName} />}
 
-        <label htmlFor="invite-code" className={LABEL_CLASS}>
-          CÓDIGO DE INVITACIÓN
-        </label>
-        <input
-          id="invite-code"
-          defaultValue={invitation.code}
-          className={`${INPUT_CLASS} border-auth-line font-display text-[18px] font-bold tracking-[3px]`}
-        />
+        {code && !info && (
+          <p
+            role="alert"
+            className={`${LABEL_CLASS} mb-[22px] rounded-[14px] bg-[#fdecea] px-4 py-3 text-[14px] text-[#c0453b]`}
+          >
+            El código no es válido o venció.
+          </p>
+        )}
 
-        <label htmlFor="invite-email" className={LABEL_CLASS}>
-          EMAIL
-        </label>
-        <input
-          id="invite-email"
-          type="email"
-          defaultValue={invitation.email}
-          className={`${INPUT_CLASS} border-auth-line`}
-        />
-
-        <label htmlFor="invite-password" className={LABEL_CLASS}>
-          CREAR CONTRASEÑA
-        </label>
-        <input
-          id="invite-password"
-          type="password"
-          defaultValue="contraseña"
-          className={`${INPUT_CLASS} border-[#f2a78e]`}
-        />
-
-        <ConsentCheckbox />
-
-        <button
-          type="button"
-          className="block w-full rounded-[15px] bg-[linear-gradient(180deg,#f4977e,#ee8164)] py-[15px] text-center text-[16px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,0.7)]"
-        >
-          Activar mi cuenta
-        </button>
-
-        <p className="mt-[22px] mb-0 text-center text-[14.5px] text-ink-faint">
-          ¿Ya tenés cuenta?{" "}
-          <Link href="/login" className="font-extrabold text-accent-strong">
-            Iniciar sesión
-          </Link>
-        </p>
+        <ActivateAccountForm code={info ? code : ""} email={info?.email ?? ""} />
       </div>
     </div>
   );

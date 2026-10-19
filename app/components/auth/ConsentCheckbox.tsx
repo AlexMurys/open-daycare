@@ -9,6 +9,8 @@ export default function ConsentCheckbox() {
     <label className="mb-6 flex cursor-pointer items-start gap-3 rounded-[14px] bg-[#fbf1d6] px-4 py-[14px]">
       <input
         type="checkbox"
+        name="consent"
+        value="on"
         checked={checked}
         onChange={(event) => setChecked(event.target.checked)}
         className="peer sr-only"
