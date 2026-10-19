@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { ParentStatus } from "@/app/_data/kids";
-import type { ParentLink } from "@/app/_data/kids";
 import type { Kid } from "@/app/_data/kids";
 import { AVATAR_COLORS } from "./avatarColors";
 import LinkParentDialog from "./LinkParentDialog";
@@ -19,12 +18,7 @@ const STATUS_CHIP: Record<ParentStatus, { label: string; className: string }> =
   };
 
 export default function ParentsCard({ kid }: { kid: Kid }) {
-  const [parents, setParents] = useState<ParentLink[]>(kid.parents);
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  function handleSend(parent: ParentLink) {
-    setParents((current) => [...current, parent]);
-  }
 
   return (
     <div className="rounded-2xl border border-line bg-surface px-4.5 py-4">
@@ -33,7 +27,7 @@ export default function ParentsCard({ kid }: { kid: Kid }) {
       </div>
 
       <div className="flex flex-col gap-3.5">
-        {parents.map((parent) => {
+        {kid.parents.map((parent) => {
           const avatar = AVATAR_COLORS[parent.avatarColor];
           const chip = STATUS_CHIP[parent.status];
 
@@ -87,12 +81,14 @@ export default function ParentsCard({ kid }: { kid: Kid }) {
         </button>
       </div>
 
-      <LinkParentDialog
-        open={dialogOpen}
-        kidName={kid.name}
-        onClose={() => setDialogOpen(false)}
-        onSend={handleSend}
-      />
+      {dialogOpen && (
+        <LinkParentDialog
+          open={dialogOpen}
+          kidId={typeof kid.id === "string" ? kid.id : ""}
+          kidName={kid.name}
+          onClose={() => setDialogOpen(false)}
+        />
+      )}
     </div>
   );
 }
