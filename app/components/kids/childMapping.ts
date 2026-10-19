@@ -1,4 +1,4 @@
-import type { Kid, KidAvatarColor } from "@/app/_data/kids";
+import type { Kid, KidAvatarColor, ParentLink, ParentRelation } from "@/app/_data/kids";
 
 export const ES_MONTHS = [
   "ene",
@@ -86,4 +86,52 @@ export function mapChildRow(row: ChildRow, roomName: string): Kid {
     room: roomName,
     enrolledSince: monthYearFromIso(row.enrolled_at),
   };
+}
+
+export type ParentRelationship = "mother" | "father" | "guardian";
+
+export interface LinkedParentRow {
+  parent_id: string;
+  parent_name: string;
+  relationship: ParentRelationship;
+}
+
+export interface PendingParentRow {
+  full_name: string;
+  relationship: ParentRelationship;
+}
+
+const RELATION_LABEL: Record<ParentRelationship, ParentRelation> = {
+  mother: "Mamá",
+  father: "Papá",
+  guardian: "Tutor/a",
+};
+
+export function mapParentRows(
+  linked: LinkedParentRow[],
+  pending: PendingParentRow[],
+): ParentLink[] {
+  const linkedLinks: ParentLink[] = linked.map((row) => {
+    const name = row.parent_name.trim();
+    return {
+      name,
+      initial: name.charAt(0).toUpperCase(),
+      relation: RELATION_LABEL[row.relationship],
+      status: "active",
+      avatarColor: AVATAR_ORDER[hashString(row.parent_id) % AVATAR_ORDER.length],
+    };
+  });
+
+  const pendingLinks: ParentLink[] = pending.map((row) => {
+    const name = row.full_name.trim();
+    return {
+      name,
+      initial: name.charAt(0).toUpperCase(),
+      relation: RELATION_LABEL[row.relationship],
+      status: "pending",
+      avatarColor: "blue",
+    };
+  });
+
+  return [...linkedLinks, ...pendingLinks];
 }

@@ -87,6 +87,8 @@ end;
 $$;
 
 -- RPC 1: consulta pública (la usa /activate-account, con o sin sesión)
+-- Ampliada con daycareId (migración remota extend_get_invitation_info_with_daycare_id):
+-- activateAccount necesita el daycare_id del niño para la metadata del signup.
 create or replace function public.get_invitation_info(p_code text)
 returns jsonb language plpgsql security definer set search_path = ''
 as $$
@@ -99,7 +101,7 @@ begin
   select * into v_room from public.rooms where id = v_child.room_id;
   return jsonb_build_object('childName', v_child.full_name, 'roomName', v_room.name,
                             'parentName', v_inv.full_name, 'email', v_inv.email,
-                            'expiresAt', v_inv.expires_at);
+                            'expiresAt', v_inv.expires_at, 'daycareId', v_room.daycare_id);
 end;
 $$;
 grant execute on function public.get_invitation_info(text) to anon, authenticated;
