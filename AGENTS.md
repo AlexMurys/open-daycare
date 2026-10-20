@@ -19,7 +19,7 @@ App de guardería en Next.js **16.3.8** + React 19.2 + TypeScript strict + Tailw
 
 ## Comandos
 
-Usa **pnpm**. Ojo: existe un `package-lock.json` obsoleto de `create-next-app`; `pnpm-lock.yaml` + `pnpm-workspace.yaml` + `node_modules/.pnpm` son los reales. No corras `npm install` (mezcla installs y rompe el árbol).
+Usa **pnpm**. El único lockfile válido es `pnpm-lock.yaml` (junto a `pnpm-workspace.yaml` y `node_modules/.pnpm`). El `package-lock.json` de `create-next-app` fue eliminado y está en `.gitignore`. No corras `npm install` (mezcla installs y rompe el árbol).
 
 ```bash
 pnpm dev            # next dev (Turbopack por defecto en 16)
