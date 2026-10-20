@@ -4,7 +4,10 @@ import { cookies } from "next/headers";
 import { kids } from "@/app/_data/kids";
 import {
   mapChildRow,
+  mapParentRows,
   type ChildRow,
+  type LinkedParentRow,
+  type PendingParentRow,
 } from "@/app/components/kids/childMapping";
 import AllergyBox from "@/app/components/kids/AllergyBox";
 import DetailsCard from "@/app/components/kids/DetailsCard";
@@ -42,6 +45,31 @@ export default async function KidProfilePage({ params }: PageProps<"/kids/[id]">
       .maybeSingle();
 
     kid = mapChildRow(childRow as ChildRow, room?.name ?? "");
+
+    const [{ data: linkedRows }, { data: pendingRows }] = await Promise.all([
+      supabase
+        .from("parent_children")
+        .select(
+          "parent_id, relationship, users!parent_children_parent_id_fkey(full_name)",
+        )
+        .eq("child_id", id),
+      supabase
+        .from("invitations")
+        .select("full_name, relationship")
+        .eq("child_id", id)
+        .eq("status", "pending")
+        .gt("expires_at", new Date().toISOString()),
+    ]);
+
+    const linked = (linkedRows ?? []).map((row) => ({
+      parent_id: row.parent_id as string,
+      parent_name: (row.users as { full_name: string }[] | null)?.[0]
+        ?.full_name ?? "",
+      relationship: row.relationship as LinkedParentRow["relationship"],
+    }));
+    const pending = (pendingRows ?? []) as PendingParentRow[];
+
+    kid.parents = mapParentRows(linked, pending);
   } else {
     kid = kids.find((item) => item.id === Number(id));
     if (!kid) notFound();

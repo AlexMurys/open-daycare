@@ -1,11 +1,7 @@
-"use client";
-
-import { useState } from "react";
 import type { ParentStatus } from "@/app/_data/kids";
-import type { ParentLink } from "@/app/_data/kids";
 import type { Kid } from "@/app/_data/kids";
 import { AVATAR_COLORS } from "./avatarColors";
-import LinkParentDialog from "./LinkParentDialog";
+import LinkParentTrigger from "./LinkParentTrigger";
 
 const STATUS_LABEL: Record<ParentStatus, string> = {
   active: "activa",
@@ -19,13 +15,6 @@ const STATUS_CHIP: Record<ParentStatus, { label: string; className: string }> =
   };
 
 export default function ParentsCard({ kid }: { kid: Kid }) {
-  const [parents, setParents] = useState<ParentLink[]>(kid.parents);
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  function handleSend(parent: ParentLink) {
-    setParents((current) => [...current, parent]);
-  }
-
   return (
     <div className="rounded-2xl border border-line bg-surface px-4.5 py-4">
       <div className="mb-3.5 text-[12.5px] font-extrabold tracking-[0.8px] text-ink-subtle">
@@ -33,7 +22,7 @@ export default function ParentsCard({ kid }: { kid: Kid }) {
       </div>
 
       <div className="flex flex-col gap-3.5">
-        {parents.map((parent) => {
+        {kid.parents.map((parent) => {
           const avatar = AVATAR_COLORS[parent.avatarColor];
           const chip = STATUS_CHIP[parent.status];
 
@@ -62,37 +51,11 @@ export default function ParentsCard({ kid }: { kid: Kid }) {
           );
         })}
 
-        <button
-          type="button"
-          onClick={() => setDialogOpen(true)}
-          className="flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 pt-2 text-left"
-        >
-          <span className="flex size-10 flex-none items-center justify-center rounded-full border-[1.5px] border-dashed border-[#D8CBBA] text-placeholder-ink">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </span>
-          <span className="text-[14.5px] font-extrabold text-accent-strong">
-            Vincular otro padre
-          </span>
-        </button>
+        <LinkParentTrigger
+          kidId={typeof kid.id === "string" ? kid.id : ""}
+          kidName={kid.name}
+        />
       </div>
-
-      <LinkParentDialog
-        open={dialogOpen}
-        kidName={kid.name}
-        onClose={() => setDialogOpen(false)}
-        onSend={handleSend}
-      />
     </div>
   );
 }

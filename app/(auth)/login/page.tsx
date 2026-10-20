@@ -9,7 +9,12 @@ export const metadata: Metadata = {
   title: "Iniciar sesión · OpenDayCare",
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: PageProps<"/login">) {
+  const params = await searchParams;
+  const activated = params.activated === "1";
+
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
   const { data: claims } = await supabase.auth.getClaims();
@@ -43,6 +48,14 @@ export default async function LoginPage() {
               OpenDayCare
             </span>
           </div>
+          {activated && (
+            <p
+              role="status"
+              className="mb-6 rounded-[14px] bg-[#e8f6ec] px-4 py-3 text-[14px] font-semibold text-[#2f7a45]"
+            >
+              ¡Tu cuenta quedó activa! Iniciá sesión.
+            </p>
+          )}
           <LoginForm />
         </div>
       </div>
